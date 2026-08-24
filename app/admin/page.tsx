@@ -1,5 +1,5 @@
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/authOptions';
 import { redirect } from 'next/navigation';
 import { readTab } from '@/lib/sheets';
 import Link from 'next/link';
@@ -29,7 +29,10 @@ export default async function AdminDashboard() {
 
   return (
     <main className="p-6 bg-ns-cream min-h-screen">
-      <h1 className="text-2xl font-extrabold text-ns-purple mb-6">Admin Dashboard</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-extrabold text-ns-purple">Admin Dashboard</h1>
+        <Link href="/admin/students" className="px-3 py-1.5 rounded-lg bg-ns-purple text-white text-sm font-semibold">+ Add / View Students</Link>
+      </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {cards.map(([label, value]) => (
