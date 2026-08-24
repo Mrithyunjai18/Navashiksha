@@ -1,0 +1,30 @@
+{
+  "name": "navashiksha-weekly-assessment",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "node --env-file=.env node_modules/.bin/next dev",
+    "build": "next build",
+    "start": "next start",
+    "setup:sheet": "tsx scripts/setup-sheet.ts"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "date-fns": "^3.6.0",
+    "googleapis": "^144.0.0",
+    "next": "14.2.13",
+    "next-auth": "^4.24.7",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.4",
+    "@types/react": "^18.3.10",
+    "autoprefixer": "^10.4.20",
+    "dotenv": "^17.4.2",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.13",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.2"
+  }
+}
