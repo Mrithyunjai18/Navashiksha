@@ -94,3 +94,4 @@ Visit `localhost:3000/login`, sign in with the Google account you added as Admin
   can just delete the duplicate row in the sheet if it ever happens.
 - Editing rows directly in the Google Sheet works fine as a manual "Admin correction" tool — the
   app will pick up the change immediately since it reads live from the sheet.
+# Navashiksha
