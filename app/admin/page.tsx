@@ -37,6 +37,7 @@ export default async function AdminDashboard() {
           <Link href="/account" className="px-3 py-1.5 rounded-lg border border-gray-300 text-gray-600 text-sm">My Account</Link>
           <Link href="/admin/students" className="px-3 py-1.5 rounded-lg bg-ns-purple text-white text-sm font-semibold">+ Add / View Students</Link>
           <Link href="/admin/teachers" className="px-3 py-1.5 rounded-lg border border-ns-purple text-ns-purple text-sm font-semibold">+ Add / View Teachers</Link>
+          <Link href="/admin/progress-report" className="px-3 py-1.5 rounded-lg border border-ns-purple text-ns-purple text-sm font-semibold">📊 Progress Report</Link>
         </div>
       </div>
 
