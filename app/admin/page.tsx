@@ -68,7 +68,7 @@ export default async function AdminDashboard() {
                   <td>{a.createdBy}</td>
                   <td>{a.daysPresent}/{a.workingDays} ({a.attendancePct}%)</td>
                   <td><span className={`px-2 py-0.5 rounded-full text-xs ${a.status === 'SUBMITTED' ? 'bg-ns-green/20 text-ns-green' : 'bg-gray-200 text-gray-600'}`}>{a.status}</span></td>
-                  <td><Link className="text-ns-blue" href={`/report/${a.id}`}>Report</Link></td>
+                  <td className="space-x-2"><Link className="text-ns-blue" href={`/report/${a.id}`}>Report</Link><Link className="text-ns-purple" href={`/admin/assessments/${a.id}/edit`}>Edit</Link></td>
                 </tr>
               );
             })}
