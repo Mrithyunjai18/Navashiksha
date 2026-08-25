@@ -11,11 +11,11 @@ export default function TeachersPage() {
   const [form, setForm] = useState({ email: '', password: '', name: '', role: 'TEACHER', branch: '', assignedClass: '', assignedSection: '' });
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
-  const [resetTarget, setResetTarget] = useState<string | null>(null);
-  const [resetPassword, setResetPassword] = useState('');
-  const [resetEmail, setResetEmail] = useState('');
-  const [resetSaving, setResetSaving] = useState(false);
-  const [resetMessage, setResetMessage] = useState('');
+
+  const [editTarget, setEditTarget] = useState<any | null>(null);
+  const [editForm, setEditForm] = useState<any>({});
+  const [editSaving, setEditSaving] = useState(false);
+  const [editMessage, setEditMessage] = useState('');
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login');
@@ -40,22 +40,28 @@ export default function TeachersPage() {
     loadTeachers();
   }
 
-  function openReset(t: any) {
-    setResetTarget(t.id); setResetEmail(t.email); setResetPassword(''); setResetMessage('');
+  function openEdit(t: any) {
+    setEditTarget(t.id);
+    setEditForm({ name: t.name, email: t.email, role: t.role, branch: t.branch || '', assignedClass: t.assignedClass || '', assignedSection: t.assignedSection || '', newPassword: '' });
+    setEditMessage('');
   }
 
-  async function submitReset() {
-    setResetSaving(true); setResetMessage('');
-    const res = await fetch(`/api/admin/teachers/${resetTarget}`, {
+  async function submitEdit() {
+    setEditSaving(true); setEditMessage('');
+    const res = await fetch(`/api/admin/teachers/${editTarget}`, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ newEmail: resetEmail, newPassword: resetPassword || undefined }),
+      body: JSON.stringify({
+        name: editForm.name, newEmail: editForm.email, role: editForm.role,
+        branch: editForm.branch, assignedClass: editForm.assignedClass, assignedSection: editForm.assignedSection,
+        newPassword: editForm.newPassword || undefined,
+      }),
     });
     const data = await res.json();
-    setResetSaving(false);
-    if (!res.ok) { setResetMessage(`❌ ${data.error}`); return; }
-    setResetMessage('✅ Updated.');
+    setEditSaving(false);
+    if (!res.ok) { setEditMessage(`❌ ${data.error}`); return; }
+    setEditMessage('✅ Updated.');
     loadTeachers();
-    setTimeout(() => setResetTarget(null), 900);
+    setTimeout(() => setEditTarget(null), 900);
   }
 
   async function toggleActive(t: any) {
@@ -116,7 +122,7 @@ export default function TeachersPage() {
                   <td>{t.assignedClass ? `${t.assignedClass}-${t.assignedSection}` : '—'}</td>
                   <td><span className={`px-2 py-0.5 rounded-full text-xs ${t.isActive !== 'false' ? 'bg-ns-green/20 text-ns-green' : 'bg-gray-200'}`}>{t.isActive !== 'false' ? 'Active' : 'Inactive'}</span></td>
                   <td className="space-x-2">
-                    <button onClick={() => openReset(t)} className="text-ns-blue">Reset</button>
+                    <button onClick={() => openEdit(t)} className="text-ns-blue">Edit</button>
                     <button onClick={() => toggleActive(t)} className="text-gray-500">{t.isActive !== 'false' ? 'Deactivate' : 'Activate'}</button>
                   </td>
                 </tr>
@@ -126,18 +132,41 @@ export default function TeachersPage() {
         </div>
       </div>
 
-      {resetTarget && (
+      {editTarget && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl2 p-5 w-full max-w-sm">
-            <h3 className="font-bold text-lg text-ns-purple mb-3">Reset Login</h3>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Email</label>
-            <input className="w-full border rounded-lg p-2 text-sm mb-3" value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} />
+          <div className="bg-white rounded-xl2 p-5 w-full max-w-sm max-h-[90vh] overflow-y-auto">
+            <h3 className="font-bold text-lg text-ns-purple mb-3">Edit User</h3>
+
+            <label className="block text-xs font-medium text-gray-600 mb-1">Full Name</label>
+            <input className="w-full border rounded-lg p-2 text-sm mb-3" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} />
+
+            <label className="block text-xs font-medium text-gray-600 mb-1">Email (username)</label>
+            <input className="w-full border rounded-lg p-2 text-sm mb-3" value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} />
+
+            <label className="block text-xs font-medium text-gray-600 mb-1">Role</label>
+            <select className="w-full border rounded-lg p-2 text-sm mb-3" value={editForm.role} onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}>
+              <option value="TEACHER">Teacher</option>
+              <option value="ADMIN">Admin</option>
+            </select>
+
+            {editForm.role === 'TEACHER' && (
+              <>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Branch</label>
+                <input className="w-full border rounded-lg p-2 text-sm mb-3" value={editForm.branch} onChange={(e) => setEditForm({ ...editForm, branch: e.target.value })} />
+                <label className="block text-xs font-medium text-gray-600 mb-1">Class</label>
+                <input className="w-full border rounded-lg p-2 text-sm mb-3" value={editForm.assignedClass} onChange={(e) => setEditForm({ ...editForm, assignedClass: e.target.value })} />
+                <label className="block text-xs font-medium text-gray-600 mb-1">Section</label>
+                <input className="w-full border rounded-lg p-2 text-sm mb-3" value={editForm.assignedSection} onChange={(e) => setEditForm({ ...editForm, assignedSection: e.target.value })} />
+              </>
+            )}
+
             <label className="block text-xs font-medium text-gray-600 mb-1">New Password (leave blank to keep current)</label>
-            <input className="w-full border rounded-lg p-2 text-sm mb-3" value={resetPassword} onChange={(e) => setResetPassword(e.target.value)} placeholder="min. 6 characters" />
-            {resetMessage && <p className="text-sm mb-2">{resetMessage}</p>}
+            <input className="w-full border rounded-lg p-2 text-sm mb-3" value={editForm.newPassword} onChange={(e) => setEditForm({ ...editForm, newPassword: e.target.value })} placeholder="min. 6 characters" />
+
+            {editMessage && <p className="text-sm mb-2">{editMessage}</p>}
             <div className="flex gap-2">
-              <button onClick={() => setResetTarget(null)} className="flex-1 py-2 rounded-xl2 border">Cancel</button>
-              <button onClick={submitReset} disabled={resetSaving} className="flex-1 py-2 rounded-xl2 bg-ns-purple text-white font-semibold">{resetSaving ? 'Saving…' : 'Save'}</button>
+              <button onClick={() => setEditTarget(null)} className="flex-1 py-2 rounded-xl2 border">Cancel</button>
+              <button onClick={submitEdit} disabled={editSaving} className="flex-1 py-2 rounded-xl2 bg-ns-purple text-white font-semibold">{editSaving ? 'Saving…' : 'Save'}</button>
             </div>
           </div>
         </div>
