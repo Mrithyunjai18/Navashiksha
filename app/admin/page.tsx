@@ -4,6 +4,8 @@ import { redirect } from 'next/navigation';
 import { readTab } from '@/lib/sheets';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminDashboard() {
   const session = await getServerSession(authOptions);
   if (!session || (session.user as any).role !== 'ADMIN') redirect('/login');
