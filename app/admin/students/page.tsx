@@ -8,6 +8,7 @@ export default function StudentsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [students, setStudents] = useState<any[]>([]);
+  const [branches, setBranches] = useState<string[]>([]);
   const [showInactive, setShowInactive] = useState(false);
   const [form, setForm] = useState({ name: '', branch: '', class: '', section: '', studentCode: '', parentName: '', parentEmail: '', parentPhone: '', dateOfBirth: '' });
   const [saving, setSaving] = useState(false);
@@ -32,7 +33,11 @@ export default function StudentsPage() {
     const res = await fetch('/api/admin/students');
     if (res.ok) setStudents(await res.json());
   }
-  useEffect(() => { loadStudents(); }, []);
+  async function loadBranches() {
+    const res = await fetch('/api/admin/branches');
+    if (res.ok) setBranches(await res.json());
+  }
+  useEffect(() => { loadStudents(); loadBranches(); }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -87,7 +92,7 @@ export default function StudentsPage() {
           <h2 className="col-span-2 font-bold text-lg text-ns-purple">Add Student</h2>
           <Field label="Name *" value={form.name} onChange={(v) => setForm({ ...form, name: v })} />
           <Field label="Student Code (optional — auto-generated if blank)" value={form.studentCode} onChange={(v) => setForm({ ...form, studentCode: v })} />
-          <Field label="Branch *" value={form.branch} onChange={(v) => setForm({ ...form, branch: v })} placeholder="e.g. Chennai" />
+          <BranchSelect label="Branch *" value={form.branch} onChange={(v) => setForm({ ...form, branch: v })} branches={branches} onAddBranch={(b) => setBranches((prev) => [...prev, b])} />
           <Field label="Class *" value={form.class} onChange={(v) => setForm({ ...form, class: v })} placeholder="e.g. LKG" />
           <Field label="Section *" value={form.section} onChange={(v) => setForm({ ...form, section: v })} placeholder="e.g. A" />
           <Field label="Date of Birth" type="date" value={form.dateOfBirth} onChange={(v) => setForm({ ...form, dateOfBirth: v })} />
@@ -135,7 +140,7 @@ export default function StudentsPage() {
             <div className="grid grid-cols-2 gap-3">
               <Field label="Name" value={editForm.name || ''} onChange={(v) => setEditForm({ ...editForm, name: v })} />
               <Field label="Student Code" value={editForm.studentCode || ''} onChange={(v) => setEditForm({ ...editForm, studentCode: v })} />
-              <Field label="Branch" value={editForm.branch || ''} onChange={(v) => setEditForm({ ...editForm, branch: v })} />
+              <BranchSelect label="Branch" value={editForm.branch || ''} onChange={(v) => setEditForm({ ...editForm, branch: v })} branches={branches} onAddBranch={(b) => setBranches((prev) => [...prev, b])} />
               <Field label="Class" value={editForm.class || ''} onChange={(v) => setEditForm({ ...editForm, class: v })} />
               <Field label="Section" value={editForm.section || ''} onChange={(v) => setEditForm({ ...editForm, section: v })} />
               <Field label="Date of Birth" type="date" value={editForm.dateOfBirth || ''} onChange={(v) => setEditForm({ ...editForm, dateOfBirth: v })} />
@@ -181,6 +186,49 @@ function Field({ label, value, onChange, placeholder, type = 'text' }: { label: 
     <div>
       <label className="block text-xs font-medium text-gray-600 mb-1">{label}</label>
       <input type={type} className="w-full border rounded-lg p-2 text-sm" value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} />
+    </div>
+  );
+}
+
+function BranchSelect({ label, value, onChange, branches, onAddBranch }: { label: string; value: string; onChange: (v: string) => void; branches: string[]; onAddBranch: (b: string) => void }) {
+  const [adding, setAdding] = useState(false);
+  const [newBranch, setNewBranch] = useState('');
+
+  async function submitNewBranch() {
+    if (!newBranch.trim()) return;
+    const res = await fetch('/api/admin/branches', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ label: newBranch }) });
+    if (res.ok) {
+      onAddBranch(newBranch.trim());
+      onChange(newBranch.trim());
+      setNewBranch(''); setAdding(false);
+    }
+  }
+
+  if (adding) {
+    return (
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">{label}</label>
+        <div className="flex gap-1">
+          <input className="w-full border rounded-lg p-2 text-sm" placeholder="New branch name" value={newBranch} onChange={(e) => setNewBranch(e.target.value)} autoFocus />
+          <button type="button" onClick={submitNewBranch} className="px-2 rounded-lg bg-ns-purple text-white text-xs">Add</button>
+          <button type="button" onClick={() => setAdding(false)} className="px-2 rounded-lg border text-xs">✕</button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <label className="block text-xs font-medium text-gray-600 mb-1">{label}</label>
+      <select
+        className="w-full border rounded-lg p-2 text-sm"
+        value={value}
+        onChange={(e) => { if (e.target.value === '__add_new__') setAdding(true); else onChange(e.target.value); }}
+      >
+        <option value="">Select branch…</option>
+        {branches.map((b) => <option key={b} value={b}>{b}</option>)}
+        <option value="__add_new__">+ Add new branch…</option>
+      </select>
     </div>
   );
 }
