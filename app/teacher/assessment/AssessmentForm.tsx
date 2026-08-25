@@ -22,7 +22,7 @@ interface FormMaster {
   schoolActivityOptions: { id: string; label: string }[];
   homeActivityOptions: { id: string; label: string }[];
   students: { id: string; name: string; studentCode: string }[];
-  customQuestions?: { id: string; label: string; type: string; options: string }[];
+  customQuestions?: { id: string; label: string; type: string; options: string; points?: string; parentQuestionId?: string; triggerOption?: string }[];
 }
 
 const PROGRESS_LABELS: Record<ProgressLevel, string> = {
