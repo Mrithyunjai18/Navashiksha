@@ -21,6 +21,8 @@ export default function CustomQuestionsPage() {
   const [editForm, setEditForm] = useState<any>({});
   const [editSaving, setEditSaving] = useState(false);
   const [editMessage, setEditMessage] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState<any | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login');
@@ -80,6 +82,14 @@ export default function CustomQuestionsPage() {
     setTimeout(() => setEditTarget(null), 700);
   }
 
+  async function confirmDelete() {
+    setDeleting(true);
+    await fetch(`/api/admin/questions/${deleteTarget.id}`, { method: 'DELETE' });
+    setDeleting(false);
+    setDeleteTarget(null);
+    load();
+  }
+
   return (
     <main className="min-h-screen bg-ns-cream p-4">
       <div className="max-w-2xl mx-auto">
@@ -134,6 +144,7 @@ export default function CustomQuestionsPage() {
                 <div className="space-x-3 text-xs">
                   <button onClick={() => openEdit(q)} className="text-ns-blue">Edit</button>
                   <button onClick={() => toggleActive(q)} className="text-gray-500">{q.isActive === 'false' ? 'Reactivate' : 'Deactivate'}</button>
+                  <button onClick={() => setDeleteTarget(q)} className="text-red-500">Delete</button>
                 </div>
               </div>
             ))}
@@ -172,6 +183,19 @@ export default function CustomQuestionsPage() {
             <div className="flex gap-2">
               <button onClick={() => setEditTarget(null)} className="flex-1 py-2 rounded-xl2 border">Cancel</button>
               <button onClick={submitEdit} disabled={editSaving} className="flex-1 py-2 rounded-xl2 bg-ns-purple text-white font-semibold">{editSaving ? 'Saving…' : 'Save'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteTarget && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl2 p-5 w-full max-w-sm">
+            <h3 className="font-bold text-lg text-red-600 mb-2">Delete this question?</h3>
+            <p className="text-sm text-gray-600 mb-4">"{deleteTarget.label}" will be permanently removed from the form. Past answers already recorded stay in historical reports, but no new answers can be added.</p>
+            <div className="flex gap-2">
+              <button onClick={() => setDeleteTarget(null)} className="flex-1 py-2 rounded-xl2 border">Cancel</button>
+              <button onClick={confirmDelete} disabled={deleting} className="flex-1 py-2 rounded-xl2 bg-red-600 text-white font-semibold">{deleting ? 'Deleting…' : 'Delete'}</button>
             </div>
           </div>
         </div>

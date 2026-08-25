@@ -85,3 +85,26 @@ export async function findRowByKey<T = Record<string, string>>(tab: string, keyC
 export function newId(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 }
+
+/** Permanently removes a row matching keyColumn/keyValue from a tab (hard delete). */
+export async function deleteRowByKey(tab: string, keyColumn: string, keyValue: string): Promise<boolean> {
+  const sheets = await getSheetsClient();
+  const meta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID });
+  const sheetInfo = meta.data.sheets?.find((s) => s.properties?.title === tab);
+  if (!sheetInfo?.properties?.sheetId && sheetInfo?.properties?.sheetId !== 0) return false;
+  const sheetId = sheetInfo.properties.sheetId;
+
+  const res = await sheets.spreadsheets.values.get({ spreadsheetId: SPREADSHEET_ID, range: `${tab}!A1:ZZ` });
+  const rows = res.data.values;
+  if (!rows || rows.length < 2) return false;
+  const header = rows[0];
+  const keyIdx = header.indexOf(keyColumn);
+  const rowIdx = rows.findIndex((r, i) => i > 0 && r[keyIdx] === keyValue);
+  if (rowIdx < 1) return false;
+
+  await sheets.spreadsheets.batchUpdate({
+    spreadsheetId: SPREADSHEET_ID,
+    requestBody: { requests: [{ deleteDimension: { range: { sheetId, dimension: 'ROWS', startIndex: rowIdx, endIndex: rowIdx + 1 } } }] },
+  });
+  return true;
+}
