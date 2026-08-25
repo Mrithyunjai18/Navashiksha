@@ -22,6 +22,7 @@ interface FormMaster {
   schoolActivityOptions: { id: string; label: string }[];
   homeActivityOptions: { id: string; label: string }[];
   students: { id: string; name: string; studentCode: string }[];
+  customQuestions?: { id: string; label: string; type: string; options: string }[];
 }
 
 const PROGRESS_LABELS: Record<ProgressLevel, string> = {
@@ -46,6 +47,7 @@ export default function AssessmentForm({ master, previousWeek }: { master: FormM
   const [mostEnjoyed, setMostEnjoyed] = useState(''); const [starMoment, setStarMoment] = useState('');
   const [schoolActivities, setSchoolActivities] = useState<string[]>([]); const [homeActivities, setHomeActivities] = useState<string[]>([]);
   const [teacherNote, setTeacherNote] = useState('');
+  const [customAnswers, setCustomAnswers] = useState<Record<string, string | string[]>>({});
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
   const attendancePct = useMemo(() => (workingDays ? Math.round((daysPresent / workingDays) * 1000) / 10 : 0), [daysPresent, workingDays]);
@@ -81,7 +83,7 @@ export default function AssessmentForm({ master, previousWeek }: { master: FormM
       socialEmotional: socialSelected, learningReadiness: readinessSelected,
       focusAreaIds: focusSelected, recognition, language, maths, concepts,
       mostEnjoyedActivity: mostEnjoyed, weeklyStarMoment: starMoment,
-      schoolActivities, homeActivities, teacherNote,
+      schoolActivities, homeActivities, teacherNote, customAnswers,
     };
     const res = await fetch('/api/assessments', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     setStatus(res.ok ? 'saved' : 'idle');
@@ -206,6 +208,32 @@ export default function AssessmentForm({ master, previousWeek }: { master: FormM
         <h2 className="font-bold text-lg mb-3 text-ns-purple">Home Activities for Parents</h2>
         <OptionGroup options={master.homeActivityOptions.map((o) => o.label)} selected={homeActivities} onToggle={(l) => setHomeActivities((p) => p.includes(l) ? p.filter((x) => x !== l) : [...p, l])} />
       </section>
+
+      {/* Custom Questions (admin-defined) */}
+      {master.customQuestions && master.customQuestions.length > 0 && (
+        <section className="bg-white rounded-xl2 shadow-sm p-5 mb-4">
+          <h2 className="font-bold text-lg mb-3 text-ns-purple">Additional Questions</h2>
+          {master.customQuestions.map((q) => {
+            const opts = (q.options || '').split(',').map((o) => o.trim()).filter(Boolean);
+            if (q.type === 'text') return <Field key={q.id} label={q.label} value={(customAnswers[q.id] as string) ?? ''} onChange={(v) => setCustomAnswers((p) => ({ ...p, [q.id]: v }))} />;
+            if (q.type === 'textarea') return <Field key={q.id} label={q.label} value={(customAnswers[q.id] as string) ?? ''} onChange={(v) => setCustomAnswers((p) => ({ ...p, [q.id]: v }))} textarea />;
+            if (q.type === 'single_select') return (
+              <div key={q.id} className="mb-3">
+                <p className="text-sm font-medium mb-1">{q.label}</p>
+                <OptionGroup options={opts} selected={customAnswers[q.id] ? [customAnswers[q.id] as string] : []} onToggle={(l) => setCustomAnswers((p) => ({ ...p, [q.id]: l }))} />
+              </div>
+            );
+            if (q.type === 'multi_select') return (
+              <div key={q.id} className="mb-3">
+                <p className="text-sm font-medium mb-1">{q.label}</p>
+                <OptionGroup options={opts} selected={(customAnswers[q.id] as string[]) ?? []}
+                  onToggle={(l) => setCustomAnswers((p) => { const arr = (p[q.id] as string[]) ?? []; return { ...p, [q.id]: arr.includes(l) ? arr.filter((x) => x !== l) : [...arr, l] }; })} />
+              </div>
+            );
+            return null;
+          })}
+        </section>
+      )}
 
       <section className="bg-white rounded-xl2 shadow-sm p-5 mb-4">
         <Field label="Teacher's Note (parent-facing)" value={teacherNote} onChange={setTeacherNote} textarea placeholder="A warm, specific note for the parent report…" />

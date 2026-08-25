@@ -8,10 +8,11 @@ export async function GET() {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const user = session.user as any;
 
-  const [students, concernRows, masterRows] = await Promise.all([
+  const [students, concernRows, masterRows, customQuestions] = await Promise.all([
     readTab<any>('Students'),
     readTab<any>('ParentConcerns'),
     readTab<{ listName: string; label: string; sortOrder: string }>('MasterLists'),
+    readTab<any>('CustomQuestions'),
   ]);
 
   const visibleStudents = user.role === 'ADMIN'
@@ -37,5 +38,6 @@ export async function GET() {
     focusAreas: pickList('FocusAreas'),
     schoolActivityOptions: pickList('SchoolActivities'),
     homeActivityOptions: pickList('HomeActivities'),
+    customQuestions: customQuestions.filter((q) => q.isActive !== 'false').sort((a, b) => +a.sortOrder - +b.sortOrder),
   });
 }

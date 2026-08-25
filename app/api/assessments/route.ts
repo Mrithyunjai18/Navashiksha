@@ -50,5 +50,15 @@ export async function POST(req: NextRequest) {
     createdBy: session.user?.email, createdAt: now, isDeleted: 'false',
   });
 
+  // Save answers to any admin-defined custom questions
+  const customAnswers: Record<string, string | string[]> = body.customAnswers ?? {};
+  for (const [questionId, answer] of Object.entries(customAnswers)) {
+    if (!answer || (Array.isArray(answer) && answer.length === 0)) continue;
+    await appendRow('CustomAnswers', {
+      id: newId('CA'), assessmentId: id, questionId,
+      answer: Array.isArray(answer) ? answer.join('|') : answer,
+    });
+  }
+
   return NextResponse.json({ id, status }, { status: 201 });
 }

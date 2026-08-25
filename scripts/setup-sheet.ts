@@ -23,6 +23,8 @@ const TABS: Record<string, string[]> = {
   ParentConcerns: ['code', 'title', 'signs', 'normalByAge', 'schoolSupports', 'homeTips', 'linkedFocusAreas'],
   MasterLists: ['listName', 'label', 'sortOrder'],
   AuditLog: ['id', 'userEmail', 'entityType', 'entityId', 'action', 'changes', 'createdAt'],
+  CustomQuestions: ['id', 'label', 'type', 'options', 'sortOrder', 'isActive'],
+  CustomAnswers: ['id', 'assessmentId', 'questionId', 'answer'],
 };
 
 const CONCERNS = [

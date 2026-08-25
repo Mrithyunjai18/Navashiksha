@@ -19,6 +19,8 @@ export default async function ParentReportPage({ params }: { params: { assessmen
   if (!a) return notFound();
   const student = await findRowByKey<any>('Students', 'id', a.studentId);
   const concernRows = await readTab<any>('ParentConcerns');
+  const customQuestions = await readTab<any>('CustomQuestions');
+  const customAnswerRows = (await readTab<any>('CustomAnswers')).filter((r) => r.assessmentId === a.id);
 
   const social = unpack(a.socialEmotional);
   const readiness = unpack(a.learningReadiness);
@@ -109,6 +111,16 @@ export default async function ParentReportPage({ params }: { params: { assessmen
               {concernCodes.map((code) => {
                 const c = concernRows.find((r) => r.code === code);
                 return c ? <p key={code} className="font-semibold">{c.title}</p> : null;
+              })}
+            </Section>
+          )}
+
+          {customAnswerRows.length > 0 && (
+            <Section title="📝 Additional Notes">
+              {customAnswerRows.map((ans) => {
+                const q = customQuestions.find((cq) => cq.id === ans.questionId);
+                if (!q) return null;
+                return <p key={ans.id}><strong>{q.label}:</strong> {ans.answer.replace(/\|/g, ', ')}</p>;
               })}
             </Section>
           )}
