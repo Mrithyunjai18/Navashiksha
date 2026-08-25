@@ -19,6 +19,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   if ('type' in body) patch.type = body.type;
   if ('options' in body) patch.options = body.options?.trim() || '';
   if ('points' in body) patch.points = body.points !== '' && body.points !== undefined ? String(body.points) : '';
+  if ('parentQuestionId' in body) patch.parentQuestionId = body.parentQuestionId || '';
+  if ('triggerOption' in body) patch.triggerOption = body.triggerOption || '';
 
   const ok = await updateRowByKey('CustomQuestions', 'id', params.id, patch);
   if (!ok) return NextResponse.json({ error: 'Not found' }, { status: 404 });

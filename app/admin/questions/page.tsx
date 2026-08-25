@@ -14,6 +14,8 @@ export default function CustomQuestionsPage() {
   const [type, setType] = useState('text');
   const [options, setOptions] = useState('');
   const [points, setPoints] = useState('');
+  const [parentQuestionId, setParentQuestionId] = useState('');
+  const [triggerOption, setTriggerOption] = useState('');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -21,6 +23,7 @@ export default function CustomQuestionsPage() {
   const [editForm, setEditForm] = useState<any>({});
   const [editSaving, setEditSaving] = useState(false);
   const [editMessage, setEditMessage] = useState('');
+
   const [deleteTarget, setDeleteTarget] = useState<any | null>(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -35,18 +38,23 @@ export default function CustomQuestionsPage() {
   }
   useEffect(() => { load(); }, []);
 
+  // top-level questions that can act as a parent (must be a choice type to branch off of)
+  const branchableParents = questions.filter((q) => (q.type === 'single_select' || q.type === 'multi_select') && !q.parentQuestionId);
+  const selectedParent = branchableParents.find((q) => q.id === parentQuestionId);
+  const parentOptions = selectedParent ? (selectedParent.options || '').split(',').map((o: string) => o.trim()).filter(Boolean) : [];
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true); setMessage('');
     const res = await fetch('/api/admin/questions', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ label, type, options, points: points || undefined }),
+      body: JSON.stringify({ label, type, options, points: points || undefined, parentQuestionId: parentQuestionId || undefined, triggerOption: triggerOption || undefined }),
     });
     const data = await res.json();
     setSaving(false);
     if (!res.ok) { setMessage(`❌ ${data.error}`); return; }
-    setMessage('✅ Question added — it will now appear on the teacher assessment form.');
-    setLabel(''); setOptions(''); setType('text'); setPoints('');
+    setMessage(parentQuestionId ? '✅ Sub-question added — it will appear when that answer is picked.' : '✅ Question added.');
+    setLabel(''); setOptions(''); setType('text'); setPoints(''); setParentQuestionId(''); setTriggerOption('');
     load();
   }
 
@@ -90,6 +98,9 @@ export default function CustomQuestionsPage() {
     load();
   }
 
+  const topLevel = questions.filter((q) => !q.parentQuestionId);
+  const childrenOf = (id: string) => questions.filter((q) => q.parentQuestionId === id);
+
   return (
     <main className="min-h-screen bg-ns-cream p-4">
       <div className="max-w-2xl mx-auto">
@@ -97,10 +108,29 @@ export default function CustomQuestionsPage() {
           <h1 className="text-2xl font-extrabold text-ns-purple">Custom Questions</h1>
           <Link href="/admin" className="text-ns-blue text-sm">← Dashboard</Link>
         </div>
-        <p className="text-sm text-gray-500 mb-4">Add extra questions to the weekly assessment form — they'll appear for every teacher, for every student, right after the standard sections. Points are optional and can be used to build a numeric score for a question (e.g. a checklist worth 5 points).</p>
+        <p className="text-sm text-gray-500 mb-4">Add extra questions to the weekly assessment form. You can also add <strong>sub-questions</strong> that only appear when a specific answer is picked on a Single/Multiple Choice question — like branching in Google Forms.</p>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-xl2 shadow-sm p-5 mb-6 space-y-3">
           <h2 className="font-bold text-lg text-ns-purple">Add a Question</h2>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Show this question only after a specific answer? (optional)</label>
+            <select className="w-full border rounded-lg p-2 text-sm" value={parentQuestionId} onChange={(e) => { setParentQuestionId(e.target.value); setTriggerOption(''); }}>
+              <option value="">No — show always (top-level question)</option>
+              {branchableParents.map((q) => <option key={q.id} value={q.id}>Sub-question of: "{q.label}"</option>)}
+            </select>
+          </div>
+
+          {parentQuestionId && (
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Trigger when the answer is *</label>
+              <select className="w-full border rounded-lg p-2 text-sm" value={triggerOption} onChange={(e) => setTriggerOption(e.target.value)}>
+                <option value="">Select the triggering option…</option>
+                {parentOptions.map((o: string) => <option key={o} value={o}>{o}</option>)}
+              </select>
+            </div>
+          )}
+
           <div>
             <label className="block text-xs font-medium text-gray-600 mb-1">Question Text *</label>
             <input className="w-full border rounded-lg p-2 text-sm" value={label} onChange={(e) => setLabel(e.target.value)} placeholder="e.g. Did the child bring their own lunch this week?" />
@@ -135,17 +165,15 @@ export default function CustomQuestionsPage() {
         <div className="bg-white rounded-xl2 shadow-sm p-5">
           <h2 className="font-bold text-lg text-ns-purple mb-3">All Questions ({questions.filter((q) => q.isActive !== 'false').length} active)</h2>
           <div className="space-y-2">
-            {questions.map((q) => (
-              <div key={q.id} className={`flex justify-between items-center border rounded-lg p-3 ${q.isActive === 'false' ? 'opacity-50' : ''}`}>
-                <div>
-                  <p className="text-sm font-medium">{q.label}{q.points && <span className="ml-2 text-xs bg-ns-yellow/60 text-ns-purple rounded-full px-2 py-0.5">{q.points} pts</span>}</p>
-                  <p className="text-xs text-gray-400">{TYPE_LABEL[q.type]}{q.options ? ` — ${q.options}` : ''}</p>
-                </div>
-                <div className="space-x-3 text-xs">
-                  <button onClick={() => openEdit(q)} className="text-ns-blue">Edit</button>
-                  <button onClick={() => toggleActive(q)} className="text-gray-500">{q.isActive === 'false' ? 'Reactivate' : 'Deactivate'}</button>
-                  <button onClick={() => setDeleteTarget(q)} className="text-red-500">Delete</button>
-                </div>
+            {topLevel.map((q) => (
+              <div key={q.id}>
+                <QuestionRow q={q} onEdit={openEdit} onToggle={toggleActive} onDelete={setDeleteTarget} />
+                {childrenOf(q.id).map((child) => (
+                  <div key={child.id} className="ml-6 mt-1 border-l-2 border-ns-purple/20 pl-3">
+                    <p className="text-xs text-gray-400 mb-1">↳ shown when "{q.label}" = <strong>{child.triggerOption}</strong></p>
+                    <QuestionRow q={child} onEdit={openEdit} onToggle={toggleActive} onDelete={setDeleteTarget} />
+                  </div>
+                ))}
               </div>
             ))}
             {questions.length === 0 && <p className="text-sm text-gray-400">No custom questions yet.</p>}
@@ -192,7 +220,7 @@ export default function CustomQuestionsPage() {
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl2 p-5 w-full max-w-sm">
             <h3 className="font-bold text-lg text-red-600 mb-2">Delete this question?</h3>
-            <p className="text-sm text-gray-600 mb-4">"{deleteTarget.label}" will be permanently removed from the form. Past answers already recorded stay in historical reports, but no new answers can be added.</p>
+            <p className="text-sm text-gray-600 mb-4">"{deleteTarget.label}" will be permanently removed. Any of its sub-questions will remain but stop showing since their trigger will be gone — deactivate or delete those too if needed.</p>
             <div className="flex gap-2">
               <button onClick={() => setDeleteTarget(null)} className="flex-1 py-2 rounded-xl2 border">Cancel</button>
               <button onClick={confirmDelete} disabled={deleting} className="flex-1 py-2 rounded-xl2 bg-red-600 text-white font-semibold">{deleting ? 'Deleting…' : 'Delete'}</button>
@@ -201,5 +229,21 @@ export default function CustomQuestionsPage() {
         </div>
       )}
     </main>
+  );
+}
+
+function QuestionRow({ q, onEdit, onToggle, onDelete }: { q: any; onEdit: (q: any) => void; onToggle: (q: any) => void; onDelete: (q: any) => void }) {
+  return (
+    <div className={`flex justify-between items-center border rounded-lg p-3 ${q.isActive === 'false' ? 'opacity-50' : ''}`}>
+      <div>
+        <p className="text-sm font-medium">{q.label}{q.points && <span className="ml-2 text-xs bg-ns-yellow/60 text-ns-purple rounded-full px-2 py-0.5">{q.points} pts</span>}</p>
+        <p className="text-xs text-gray-400">{TYPE_LABEL[q.type]}{q.options ? ` — ${q.options}` : ''}</p>
+      </div>
+      <div className="space-x-3 text-xs whitespace-nowrap">
+        <button onClick={() => onEdit(q)} className="text-ns-blue">Edit</button>
+        <button onClick={() => onToggle(q)} className="text-gray-500">{q.isActive === 'false' ? 'Reactivate' : 'Deactivate'}</button>
+        <button onClick={() => onDelete(q)} className="text-red-500">Delete</button>
+      </div>
+    </div>
   );
 }

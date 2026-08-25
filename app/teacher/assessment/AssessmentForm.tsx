@@ -209,29 +209,13 @@ export default function AssessmentForm({ master, previousWeek }: { master: FormM
         <OptionGroup options={master.homeActivityOptions.map((o) => o.label)} selected={homeActivities} onToggle={(l) => setHomeActivities((p) => p.includes(l) ? p.filter((x) => x !== l) : [...p, l])} />
       </section>
 
-      {/* Custom Questions (admin-defined) */}
+      {/* Custom Questions (admin-defined) — with Google-Forms-style branching sub-questions */}
       {master.customQuestions && master.customQuestions.length > 0 && (
         <section className="bg-white rounded-xl2 shadow-sm p-5 mb-4">
           <h2 className="font-bold text-lg mb-3 text-ns-purple">Additional Questions</h2>
-          {master.customQuestions.map((q) => {
-            const opts = (q.options || '').split(',').map((o) => o.trim()).filter(Boolean);
-            if (q.type === 'text') return <Field key={q.id} label={q.label} value={(customAnswers[q.id] as string) ?? ''} onChange={(v) => setCustomAnswers((p) => ({ ...p, [q.id]: v }))} />;
-            if (q.type === 'textarea') return <Field key={q.id} label={q.label} value={(customAnswers[q.id] as string) ?? ''} onChange={(v) => setCustomAnswers((p) => ({ ...p, [q.id]: v }))} textarea />;
-            if (q.type === 'single_select') return (
-              <div key={q.id} className="mb-3">
-                <p className="text-sm font-medium mb-1">{q.label}</p>
-                <OptionGroup options={opts} selected={customAnswers[q.id] ? [customAnswers[q.id] as string] : []} onToggle={(l) => setCustomAnswers((p) => ({ ...p, [q.id]: l }))} />
-              </div>
-            );
-            if (q.type === 'multi_select') return (
-              <div key={q.id} className="mb-3">
-                <p className="text-sm font-medium mb-1">{q.label}</p>
-                <OptionGroup options={opts} selected={(customAnswers[q.id] as string[]) ?? []}
-                  onToggle={(l) => setCustomAnswers((p) => { const arr = (p[q.id] as string[]) ?? []; return { ...p, [q.id]: arr.includes(l) ? arr.filter((x) => x !== l) : [...arr, l] }; })} />
-              </div>
-            );
-            return null;
-          })}
+          {master.customQuestions.filter((q) => !q.parentQuestionId).map((q) => (
+            <CustomQuestionBlock key={q.id} question={q} allQuestions={master.customQuestions!} customAnswers={customAnswers} setCustomAnswers={setCustomAnswers} />
+          ))}
         </section>
       )}
 
@@ -289,6 +273,52 @@ function Field({ label, value, onChange, placeholder, textarea }: { label: strin
       {textarea
         ? <textarea className="w-full border rounded-lg p-2" rows={3} value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} />
         : <input className="w-full border rounded-lg p-2" value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} />}
+    </div>
+  );
+}
+
+function CustomQuestionBlock({
+  question, allQuestions, customAnswers, setCustomAnswers,
+}: {
+  question: { id: string; label: string; type: string; options: string };
+  allQuestions: { id: string; label: string; type: string; options: string; parentQuestionId?: string; triggerOption?: string }[];
+  customAnswers: Record<string, string | string[]>;
+  setCustomAnswers: React.Dispatch<React.SetStateAction<Record<string, string | string[]>>>;
+}) {
+  const opts = (question.options || '').split(',').map((o) => o.trim()).filter(Boolean);
+  const value = customAnswers[question.id];
+
+  const children = allQuestions.filter((q) => q.parentQuestionId === question.id);
+  // a sub-question shows only if its trigger option is among the current answer(s)
+  const currentAnswerList = Array.isArray(value) ? value : value ? [value] : [];
+
+  return (
+    <div className="mb-3">
+      {question.type === 'text' && <Field label={question.label} value={(value as string) ?? ''} onChange={(v) => setCustomAnswers((p) => ({ ...p, [question.id]: v }))} />}
+      {question.type === 'textarea' && <Field label={question.label} value={(value as string) ?? ''} onChange={(v) => setCustomAnswers((p) => ({ ...p, [question.id]: v }))} textarea />}
+      {question.type === 'single_select' && (
+        <div>
+          <p className="text-sm font-medium mb-1">{question.label}</p>
+          <OptionGroup options={opts} selected={value ? [value as string] : []} onToggle={(l) => setCustomAnswers((p) => ({ ...p, [question.id]: l }))} />
+        </div>
+      )}
+      {question.type === 'multi_select' && (
+        <div>
+          <p className="text-sm font-medium mb-1">{question.label}</p>
+          <OptionGroup options={opts} selected={(value as string[]) ?? []}
+            onToggle={(l) => setCustomAnswers((p) => { const arr = (p[question.id] as string[]) ?? []; return { ...p, [question.id]: arr.includes(l) ? arr.filter((x) => x !== l) : [...arr, l] }; })} />
+        </div>
+      )}
+
+      {children.length > 0 && (
+        <div className="ml-4 mt-2 pl-3 border-l-2 border-ns-purple/20 space-y-3">
+          {children
+            .filter((child) => currentAnswerList.includes(child.triggerOption || ''))
+            .map((child) => (
+              <CustomQuestionBlock key={child.id} question={child} allQuestions={allQuestions} customAnswers={customAnswers} setCustomAnswers={setCustomAnswers} />
+            ))}
+        </div>
+      )}
     </div>
   );
 }
