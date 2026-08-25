@@ -11,7 +11,7 @@ const SPREADSHEET_ID = process.env.GOOGLE_SHEET_ID!;
 
 const TABS: Record<string, string[]> = {
   Students: ['id', 'studentCode', 'name', 'nameVariants', 'branch', 'class', 'section', 'dateOfBirth', 'parentName', 'parentEmail', 'parentPhone', 'admissionDate', 'status'],
-  Teachers: ['id', 'googleEmail', 'name', 'role', 'branch', 'assignedClass', 'assignedSection', 'isActive'],
+  Teachers: ['id', 'email', 'passwordHash', 'name', 'role', 'branch', 'assignedClass', 'assignedSection', 'isActive'],
   Assessments: [
     'id', 'studentId', 'weekStartDate', 'assessmentDate', 'workingDays', 'daysPresent', 'attendancePct', 'status',
     'parentConcernCodes', 'parentConcernSigns', 'parentConcernSchoolSupport', 'parentConcernHomeTips', 'parentConcernNote',

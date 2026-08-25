@@ -1,32 +1,52 @@
 import { NextAuthOptions } from 'next-auth';
-import GoogleProvider from 'next-auth/providers/google';
+import CredentialsProvider from 'next-auth/providers/credentials';
 import { readTab } from '@/lib/sheets';
+import bcrypt from 'bcryptjs';
+
+interface TeacherRow {
+  id: string; email: string; passwordHash: string; name: string;
+  role: string; branch: string; assignedClass: string; assignedSection: string; isActive: string;
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_OAUTH_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET!,
+    CredentialsProvider({
+      name: 'Email and Password',
+      credentials: {
+        email: { label: 'Email', type: 'text' },
+        password: { label: 'Password', type: 'password' },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) return null;
+
+        const teachers = await readTab<TeacherRow>('Teachers');
+        const match = teachers.find((t) => t.email.toLowerCase() === credentials.email.toLowerCase());
+        if (!match || match.isActive === 'false') return null;
+
+        const valid = await bcrypt.compare(credentials.password, match.passwordHash || '');
+        if (!valid) return null;
+
+        return {
+          id: match.id,
+          email: match.email,
+          name: match.name,
+          // extra fields carried through jwt callback below
+          role: match.role,
+          branch: match.branch,
+          assignedClass: match.assignedClass,
+          assignedSection: match.assignedSection,
+        } as any;
+      },
     }),
   ],
+  session: { strategy: 'jwt' },
   callbacks: {
-    async signIn({ user }) {
-      if (!user.email) return false;
-      const teachers = await readTab<{ googleEmail: string; isActive: string }>('Teachers');
-      const match = teachers.find((t) => t.googleEmail.toLowerCase() === user.email!.toLowerCase());
-      return !!match && match.isActive !== 'false';
-    },
     async jwt({ token, user }) {
-      if (user?.email) {
-        const teachers = await readTab<{ googleEmail: string; role: string; name: string; branch: string; assignedClass: string; assignedSection: string }>('Teachers');
-        const match = teachers.find((t) => t.googleEmail.toLowerCase() === user.email!.toLowerCase());
-        if (match) {
-          token.role = match.role;
-          token.name = match.name;
-          token.branch = match.branch;
-          token.assignedClass = match.assignedClass;
-          token.assignedSection = match.assignedSection;
-        }
+      if (user) {
+        token.role = (user as any).role;
+        token.branch = (user as any).branch;
+        token.assignedClass = (user as any).assignedClass;
+        token.assignedSection = (user as any).assignedSection;
       }
       return token;
     },
