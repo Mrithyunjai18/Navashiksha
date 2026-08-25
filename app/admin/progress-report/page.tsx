@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ReportShareBar from '@/components/ReportShareBar';
+import { AttendanceTrendChart, AttendanceRing, SkillBar } from '@/components/ReportCharts';
 
 const LEVEL_LABEL: Record<string, string> = { NOT_YET_INTRODUCED: 'Not yet introduced', WITH_HELP: 'With help', INDEPENDENT: 'Independent' };
 
@@ -83,9 +84,20 @@ export default function ProgressReportPage() {
                 <h2 className="text-lg font-extrabold text-center text-ns-purple mb-1">Progress Report</h2>
                 <p className="text-center text-sm text-gray-500 mb-4">{data.student.name} · {new Date(data.dateRange.from).toLocaleDateString()} – {new Date(data.dateRange.to).toLocaleDateString()} · {data.weeksCount} week{data.weeksCount !== 1 ? 's' : ''} assessed</p>
 
-                <div className="bg-ns-cream rounded-xl2 p-4 text-center mb-4">
-                  <p className="text-3xl font-extrabold text-ns-purple">{data.avgAttendance}%</p>
-                  <p className="text-xs text-gray-500">Average Attendance</p>
+                <div className="bg-ns-cream rounded-xl2 p-4 mb-4">
+                  <div className="flex items-center justify-around">
+                    <AttendanceRing pct={data.avgAttendance} />
+                    <div className="text-center">
+                      <p className="text-2xl font-extrabold text-ns-purple">{data.weeksCount}</p>
+                      <p className="text-xs text-gray-500">Weeks Assessed</p>
+                    </div>
+                  </div>
+                  {data.attendanceTrend.length > 1 && (
+                    <div className="mt-3">
+                      <p className="text-xs font-semibold text-gray-500 mb-1 text-center">Attendance Trend</p>
+                      <AttendanceTrendChart data={data.attendanceTrend} />
+                    </div>
+                  )}
                 </div>
 
                 <RepSection title="🌱 Improving Areas" empty="No clear upward trend yet — steady progress across the board.">
