@@ -20,7 +20,7 @@ export default function TeacherAssessmentPage() {
     <main className="bg-ns-cream min-h-screen p-4">
       <div className="max-w-2xl mx-auto mb-4">
         <h1 className="text-2xl font-extrabold text-ns-purple">Weekly Assessment</h1>
-        <p className="text-sm text-gray-500">Signed in as {session?.user?.name}</p>
+        <p className="text-sm text-gray-500">Signed in as {session?.user?.name} · <a href="/account" className="text-ns-blue underline">My Account</a></p>
       </div>
       <AssessmentForm master={master} />
     </main>

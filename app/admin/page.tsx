@@ -34,6 +34,7 @@ export default async function AdminDashboard() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-extrabold text-ns-purple">Admin Dashboard</h1>
         <div className="flex gap-2">
+          <Link href="/account" className="px-3 py-1.5 rounded-lg border border-gray-300 text-gray-600 text-sm">My Account</Link>
           <Link href="/admin/students" className="px-3 py-1.5 rounded-lg bg-ns-purple text-white text-sm font-semibold">+ Add / View Students</Link>
           <Link href="/admin/teachers" className="px-3 py-1.5 rounded-lg border border-ns-purple text-ns-purple text-sm font-semibold">+ Add / View Teachers</Link>
         </div>

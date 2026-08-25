@@ -11,6 +11,11 @@ export default function TeachersPage() {
   const [form, setForm] = useState({ email: '', password: '', name: '', role: 'TEACHER', branch: '', assignedClass: '', assignedSection: '' });
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const [resetTarget, setResetTarget] = useState<string | null>(null);
+  const [resetPassword, setResetPassword] = useState('');
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetSaving, setResetSaving] = useState(false);
+  const [resetMessage, setResetMessage] = useState('');
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login');
@@ -32,6 +37,32 @@ export default function TeachersPage() {
     if (!res.ok) { setMessage(`❌ ${data.error}`); return; }
     setMessage(`✅ Added ${form.name} (${form.role}) — share the email + password with them to log in.`);
     setForm({ email: '', password: '', name: '', role: 'TEACHER', branch: form.branch, assignedClass: form.assignedClass, assignedSection: form.assignedSection });
+    loadTeachers();
+  }
+
+  function openReset(t: any) {
+    setResetTarget(t.id); setResetEmail(t.email); setResetPassword(''); setResetMessage('');
+  }
+
+  async function submitReset() {
+    setResetSaving(true); setResetMessage('');
+    const res = await fetch(`/api/admin/teachers/${resetTarget}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ newEmail: resetEmail, newPassword: resetPassword || undefined }),
+    });
+    const data = await res.json();
+    setResetSaving(false);
+    if (!res.ok) { setResetMessage(`❌ ${data.error}`); return; }
+    setResetMessage('✅ Updated.');
+    loadTeachers();
+    setTimeout(() => setResetTarget(null), 900);
+  }
+
+  async function toggleActive(t: any) {
+    await fetch(`/api/admin/teachers/${t.id}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ isActive: t.isActive === 'false' }),
+    });
     loadTeachers();
   }
 
@@ -76,7 +107,7 @@ export default function TeachersPage() {
         <div className="bg-white rounded-xl2 shadow-sm p-5">
           <h2 className="font-bold text-lg text-ns-purple mb-3">All Users ({teachers.length})</h2>
           <table className="w-full text-sm">
-            <thead><tr className="text-left text-gray-500 border-b"><th className="py-1">Name</th><th>Email</th><th>Role</th><th>Class</th><th>Status</th></tr></thead>
+            <thead><tr className="text-left text-gray-500 border-b"><th className="py-1">Name</th><th>Email</th><th>Role</th><th>Class</th><th>Status</th><th>Actions</th></tr></thead>
             <tbody>
               {teachers.map((t) => (
                 <tr key={t.id} className="border-b last:border-0">
@@ -84,12 +115,33 @@ export default function TeachersPage() {
                   <td><span className={`px-2 py-0.5 rounded-full text-xs ${t.role === 'ADMIN' ? 'bg-ns-purple/20 text-ns-purple' : 'bg-ns-blue/20 text-ns-blue'}`}>{t.role}</span></td>
                   <td>{t.assignedClass ? `${t.assignedClass}-${t.assignedSection}` : '—'}</td>
                   <td><span className={`px-2 py-0.5 rounded-full text-xs ${t.isActive !== 'false' ? 'bg-ns-green/20 text-ns-green' : 'bg-gray-200'}`}>{t.isActive !== 'false' ? 'Active' : 'Inactive'}</span></td>
+                  <td className="space-x-2">
+                    <button onClick={() => openReset(t)} className="text-ns-blue">Reset</button>
+                    <button onClick={() => toggleActive(t)} className="text-gray-500">{t.isActive !== 'false' ? 'Deactivate' : 'Activate'}</button>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       </div>
+
+      {resetTarget && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl2 p-5 w-full max-w-sm">
+            <h3 className="font-bold text-lg text-ns-purple mb-3">Reset Login</h3>
+            <label className="block text-xs font-medium text-gray-600 mb-1">Email</label>
+            <input className="w-full border rounded-lg p-2 text-sm mb-3" value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} />
+            <label className="block text-xs font-medium text-gray-600 mb-1">New Password (leave blank to keep current)</label>
+            <input className="w-full border rounded-lg p-2 text-sm mb-3" value={resetPassword} onChange={(e) => setResetPassword(e.target.value)} placeholder="min. 6 characters" />
+            {resetMessage && <p className="text-sm mb-2">{resetMessage}</p>}
+            <div className="flex gap-2">
+              <button onClick={() => setResetTarget(null)} className="flex-1 py-2 rounded-xl2 border">Cancel</button>
+              <button onClick={submitReset} disabled={resetSaving} className="flex-1 py-2 rounded-xl2 bg-ns-purple text-white font-semibold">{resetSaving ? 'Saving…' : 'Save'}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
