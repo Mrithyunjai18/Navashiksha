@@ -10,6 +10,8 @@ const EDITABLE_FIELDS = [
   'language', 'maths', 'concepts',
   'letterRecognition', 'numberRecognition', 'shapeRecognition', 'colourRecognition',
   'mostEnjoyedActivity', 'weeklyStarMoment', 'teacherNote',
+  'socialEmotional', 'learningReadiness', 'focusAreas', 'schoolActivities', 'homeActivities',
+  'parentConcernCodes', 'parentConcernSigns', 'parentConcernSchoolSupport', 'parentConcernHomeTips', 'parentConcernNote',
 ];
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
