@@ -1,5 +1,6 @@
 import { findRowByKey, readTab } from '@/lib/sheets';
 import { notFound } from 'next/navigation';
+import ReportShareBar from '@/components/ReportShareBar';
 
 const PROGRESS_LABEL: Record<string, string> = { NEEDS_SUPPORT: 'Needs Support', DEVELOPING: 'Developing', GOOD: 'Good', EXCELLENT: 'Excellent' };
 const PROGRESS_COLOR: Record<string, string> = { NEEDS_SUPPORT: 'bg-orange-200 text-orange-800', DEVELOPING: 'bg-yellow-200 text-yellow-800', GOOD: 'bg-green-200 text-green-800', EXCELLENT: 'bg-emerald-300 text-emerald-900' };
@@ -27,7 +28,7 @@ export default async function ParentReportPage({ params }: { params: { assessmen
 
   return (
     <main className="bg-ns-cream min-h-screen py-6 px-3 print:p-0">
-      <div className="max-w-xl mx-auto bg-white rounded-xl2 overflow-hidden shadow-lg print:shadow-none">
+      <div id="report-card" className="max-w-xl mx-auto bg-white rounded-xl2 overflow-hidden shadow-lg print:shadow-none">
         <div className="bg-ns-yellow p-5 text-center">
           <p className="text-xs tracking-widest text-ns-pink font-bold">✳ SINCE 2012 ✳</p>
           <h1 className="text-3xl font-extrabold text-ns-purple tracking-wide">NAVASHIKSHA</h1>
@@ -112,6 +113,8 @@ export default async function ParentReportPage({ params }: { params: { assessmen
 
         <div className="bg-ns-purple text-white text-center text-xs py-3">Navashiksha Preschool • Playschool • Daycare — Since 2012</div>
       </div>
+
+      <ReportShareBar targetId="report-card" fileName={`${student?.name?.replace(/\s+/g, '_') || 'student'}_Week_${a.weekStartDate}`} />
     </main>
   );
 }
