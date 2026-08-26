@@ -1,4 +1,4 @@
-export default function ReportHeader({ instagramHandle = 'navashiksha' }: { instagramHandle?: string }) {
+export default function ReportHeader({ instagramHandle = 'navashikshaplayschoolhsr' }: { instagramHandle?: string }) {
   return (
     <div className="bg-ns-yellow p-5 text-center">
       <p className="text-xs tracking-widest text-ns-pink font-bold">✳ SINCE 2012 ✳</p>
