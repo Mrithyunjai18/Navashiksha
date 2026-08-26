@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import ReportShareBar from '@/components/ReportShareBar';
 import BackButton from '@/components/BackButton';
 import DeleteReportButton from '@/components/DeleteReportButton';
+import ReportHeader from '@/components/ReportHeader';
 import { AttendanceRing, SkillBar } from '@/components/ReportCharts';
 
 const PROGRESS_LABEL: Record<string, string> = { NEEDS_SUPPORT: 'Needs Support', DEVELOPING: 'Developing', GOOD: 'Good', EXCELLENT: 'Excellent' };
@@ -41,16 +42,7 @@ export default async function ParentReportPage({ params }: { params: { assessmen
         </div>
       </div>
       <div id="report-card" className="max-w-xl mx-auto bg-white rounded-xl2 overflow-hidden shadow-lg print:shadow-none">
-        <div className="bg-ns-yellow p-5 text-center">
-          <p className="text-xs tracking-widest text-ns-pink font-bold">✳ SINCE 2012 ✳</p>
-          <h1 className="text-3xl font-extrabold text-ns-purple tracking-wide">NAVASHIKSHA</h1>
-          <p className="text-sm font-bold text-emerald-600">PRESCHOOL • PLAYSCHOOL • DAYCARE</p>
-          <div className="flex justify-center gap-3 mt-3 text-xs font-bold">
-            <span className="bg-white rounded-full px-3 py-1 text-ns-pink">🔺 MONTESSORI</span>
-            <span className="bg-white rounded-full px-3 py-1 text-ns-green">🌱 PLAYWAY</span>
-            <span className="bg-white rounded-full px-3 py-1 text-ns-blue">⭐ HOLISTIC GROWTH</span>
-          </div>
-        </div>
+        <ReportHeader />
 
         <div className="p-5">
           <h2 className="text-xl font-extrabold text-center text-ns-purple mb-4">Weekly Learning & Development Report</h2>
