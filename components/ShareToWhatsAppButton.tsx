@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { isValidWhatsAppNumber, normalizeWhatsAppNumber } from '@/lib/whatsapp';
 
 export default function ShareToWhatsAppButton({
@@ -7,8 +8,13 @@ export default function ShareToWhatsAppButton({
 }: {
   targetId: string; parentName: string; parentPhone: string; studentName: string; reportUrl: string; fileName: string;
 }) {
+  const { data: session } = useSession();
   const [busy, setBusy] = useState(false);
   const valid = isValidWhatsAppNumber(parentPhone);
+
+  // Staff-only — this sends the report TO the parent, so it shouldn't appear
+  // when the parent themselves opens the shared report link with no session.
+  if (!session?.user) return null;
 
   const message = `Hi ${parentName || 'there'},\nPlease find the weekly report of your child ${studentName} from Navashiksha Play School.\n📄 Weekly Report: ${reportUrl}\nThank you for your continued support. 💛\nRegards,\nNavashiksha Play School`;
 
