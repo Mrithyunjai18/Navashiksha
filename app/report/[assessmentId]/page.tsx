@@ -4,7 +4,9 @@ import ReportShareBar from '@/components/ReportShareBar';
 import BackButton from '@/components/BackButton';
 import DeleteReportButton from '@/components/DeleteReportButton';
 import ReportHeader from '@/components/ReportHeader';
+import ShareToWhatsAppButton from '@/components/ShareToWhatsAppButton';
 import { AttendanceRing, SkillBar } from '@/components/ReportCharts';
+import { headers } from 'next/headers';
 
 const PROGRESS_LABEL: Record<string, string> = { NEEDS_SUPPORT: 'Needs Support', DEVELOPING: 'Developing', GOOD: 'Good', EXCELLENT: 'Excellent' };
 const PROGRESS_COLOR: Record<string, string> = { NEEDS_SUPPORT: 'bg-orange-200 text-orange-800', DEVELOPING: 'bg-yellow-200 text-yellow-800', GOOD: 'bg-green-200 text-green-800', EXCELLENT: 'bg-emerald-300 text-emerald-900' };
@@ -24,6 +26,10 @@ export default async function ParentReportPage({ params }: { params: { assessmen
   const concernRows = await readTab<any>('ParentConcerns');
   const customQuestions = await readTab<any>('CustomQuestions');
   const customAnswerRows = (await readTab<any>('CustomAnswers')).filter((r) => r.assessmentId === a.id);
+
+  const host = headers().get('host');
+  const protocol = host?.includes('localhost') ? 'http' : 'https';
+  const reportUrl = `${protocol}://${host}/report/${a.id}`;
 
   const social = unpack(a.socialEmotional);
   const readiness = unpack(a.learningReadiness);
@@ -126,6 +132,17 @@ export default async function ParentReportPage({ params }: { params: { assessmen
       </div>
 
       <ReportShareBar targetId="report-card" fileName={`${student?.name?.replace(/\s+/g, '_') || 'student'}_Week_${a.weekStartDate}`} />
+
+      <div className="max-w-xl mx-auto mt-2 flex gap-2 print:hidden">
+        <ShareToWhatsAppButton
+          targetId="report-card"
+          parentName={student?.parentName || ''}
+          parentPhone={student?.parentPhone || ''}
+          studentName={student?.name || ''}
+          reportUrl={reportUrl}
+          fileName={`${student?.name?.replace(/\s+/g, '_') || 'student'}_Week_${a.weekStartDate}`}
+        />
+      </div>
     </main>
   );
 }
