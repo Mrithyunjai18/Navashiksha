@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { isAdminRole } from '@/lib/roles';
 
 function toCommaList(pipeStr: string): string { return (pipeStr || '').split('|').filter(Boolean).join(', '); }
 function toPipeList(commaStr: string): string { return commaStr.split(',').map((s) => s.trim()).filter(Boolean).join('|'); }
@@ -26,7 +27,7 @@ export default function ParentConcernsPage() {
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login');
-    if (status === 'authenticated' && (session?.user as any)?.role !== 'ADMIN') router.push('/teacher/assessment');
+    if (status === 'authenticated' && !isAdminRole((session?.user as any)?.role)) router.push('/teacher/assessment');
   }, [status, session]);
 
   async function load() {

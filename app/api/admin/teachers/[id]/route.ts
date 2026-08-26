@@ -3,12 +3,13 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 import { readTab, updateRowByKey, deleteRowByKey } from '@/lib/sheets';
 import bcrypt from 'bcryptjs';
+import { isAdminRole } from '@/lib/roles';
 
 export const dynamic = 'force-dynamic';
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
-  if (!session || (session.user as any).role !== 'ADMIN') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session || !isAdminRole((session.user as any).role)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { newEmail, newPassword, isActive, name, role, branch, assignedClass, assignedSection } = await req.json();
   if (newPassword && newPassword.length < 6) return NextResponse.json({ error: 'Password must be at least 6 characters.' }, { status: 400 });
@@ -42,7 +43,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 // (createdBy is just their email string, unaffected by deleting the account).
 export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
-  if (!session || (session.user as any).role !== 'ADMIN') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session || !isAdminRole((session.user as any).role)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   if ((session.user as any).id === params.id) {
     // best-effort guard — prevents an admin from deleting their own currently-logged-in account by accident

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { isAdminRole } from '@/lib/roles';
 
 export default function StudentsPage() {
   const { data: session, status } = useSession();
@@ -26,7 +27,7 @@ export default function StudentsPage() {
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login');
-    if (status === 'authenticated' && (session?.user as any)?.role !== 'ADMIN') router.push('/teacher/assessment');
+    if (status === 'authenticated' && !isAdminRole((session?.user as any)?.role)) router.push('/teacher/assessment');
   }, [status, session]);
 
   async function loadStudents() {

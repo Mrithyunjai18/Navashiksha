@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { AttendanceRing, SkillBar } from '@/components/ReportCharts';
+import { isAdminRole } from '@/lib/roles';
 
 function mondayOfCurrentWeek(): string {
   const d = new Date();
@@ -25,7 +26,7 @@ export default function WeeklyDigestPage() {
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login');
-    if (status === 'authenticated' && (session?.user as any)?.role !== 'ADMIN') router.push('/teacher/assessment');
+    if (status === 'authenticated' && !isAdminRole((session?.user as any)?.role)) router.push('/teacher/assessment');
   }, [status, session]);
 
   async function loadWeek() {

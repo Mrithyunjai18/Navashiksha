@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 import { findRowByKey, updateRowByKey, appendRow, newId } from '@/lib/sheets';
+import { isAdminRole } from '@/lib/roles';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,7 +17,7 @@ const EDITABLE_FIELDS = [
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
-  if (!session || (session.user as any).role !== 'ADMIN') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session || !isAdminRole((session.user as any).role)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const assessment = await findRowByKey<any>('Assessments', 'id', params.id);
   if (!assessment) return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -25,7 +26,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
-  if (!session || (session.user as any).role !== 'ADMIN') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session || !isAdminRole((session.user as any).role)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const before = await findRowByKey<any>('Assessments', 'id', params.id);
   if (!before) return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -61,7 +62,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 // DELETE — soft delete with confirmation handled client-side
 export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
-  if (!session || (session.user as any).role !== 'ADMIN') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session || !isAdminRole((session.user as any).role)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const ok = await updateRowByKey('Assessments', 'id', params.id, {
     isDeleted: 'true', deletedBy: session.user?.email, deletedAt: new Date().toISOString(),

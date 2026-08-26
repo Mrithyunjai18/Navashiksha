@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 import { updateRowByKey, deleteRowByKey } from '@/lib/sheets';
+import { isAdminRole } from '@/lib/roles';
 
 export const dynamic = 'force-dynamic';
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
-  if (!session || (session.user as any).role !== 'ADMIN') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session || !isAdminRole((session.user as any).role)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const body = await req.json();
   if ((body.type === 'single_select' || body.type === 'multi_select') && body.options !== undefined && !body.options.trim())
@@ -31,7 +32,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 // (historical reports keep their data), but it's gone from the form and the admin list.
 export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
-  if (!session || (session.user as any).role !== 'ADMIN') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session || !isAdminRole((session.user as any).role)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const ok = await deleteRowByKey('CustomQuestions', 'id', params.id);
   if (!ok) return NextResponse.json({ error: 'Not found' }, { status: 404 });

@@ -3,12 +3,13 @@ import { authOptions } from '@/lib/authOptions';
 import { redirect } from 'next/navigation';
 import { readTab } from '@/lib/sheets';
 import Link from 'next/link';
+import { isAdminRole } from '@/lib/roles';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminDashboard() {
   const session = await getServerSession(authOptions);
-  if (!session || (session.user as any).role !== 'ADMIN') redirect('/login');
+  if (!session || !isAdminRole((session.user as any).role)) redirect('/login');
 
   const [students, assessments, teachers] = await Promise.all([
     readTab<any>('Students'), readTab<any>('Assessments'), readTab<any>('Teachers'),

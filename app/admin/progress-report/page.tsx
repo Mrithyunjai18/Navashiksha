@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ReportShareBar from '@/components/ReportShareBar';
 import { AttendanceTrendChart, AttendanceRing, SkillBar } from '@/components/ReportCharts';
+import { isAdminRole } from '@/lib/roles';
 
 const LEVEL_LABEL: Record<string, string> = { NOT_YET_INTRODUCED: 'Not yet introduced', WITH_HELP: 'With help', INDEPENDENT: 'Independent' };
 
@@ -24,7 +25,7 @@ export default function ProgressReportPage() {
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login');
-    if (status === 'authenticated' && (session?.user as any)?.role !== 'ADMIN') router.push('/teacher/assessment');
+    if (status === 'authenticated' && !isAdminRole((session?.user as any)?.role)) router.push('/teacher/assessment');
   }, [status, session]);
 
   useEffect(() => { fetch('/api/admin/students').then((r) => r.json()).then(setStudents); }, []);

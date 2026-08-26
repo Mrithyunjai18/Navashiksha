@@ -3,12 +3,13 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 import { appendRow, readTab, updateRowByKey, newId } from '@/lib/sheets';
 import bcrypt from 'bcryptjs';
+import { isAdminRole } from '@/lib/roles';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const session = await getServerSession(authOptions);
-  if (!session || (session.user as any).role !== 'ADMIN') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session || !isAdminRole((session.user as any).role)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const teachers = await readTab<any>('Teachers');
   // never leak password hashes to the client
@@ -18,7 +19,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session || (session.user as any).role !== 'ADMIN') return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session || !isAdminRole((session.user as any).role)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const body = await req.json();
   const { email, password, name, role, branch, assignedClass, assignedSection } = body;
@@ -29,6 +30,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Password must be at least 6 characters.' }, { status: 400 });
   if (role === 'TEACHER' && (!branch || !assignedClass || !assignedSection))
     return NextResponse.json({ error: 'Branch, class and section are required for teachers.' }, { status: 400 });
+  if (role === 'CENTER_HEAD' && !branch)
+    return NextResponse.json({ error: 'Branch is required for Center Head.' }, { status: 400 });
 
   const existing = await readTab<any>('Teachers');
   const dup = existing.find((t) => t.email?.toLowerCase() === email.toLowerCase());

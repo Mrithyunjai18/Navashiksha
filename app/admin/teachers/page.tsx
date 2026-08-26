@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { isAdminRole } from '@/lib/roles';
 
 export default function TeachersPage() {
   const { data: session, status } = useSession();
@@ -23,7 +24,7 @@ export default function TeachersPage() {
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login');
-    if (status === 'authenticated' && (session?.user as any)?.role !== 'ADMIN') router.push('/teacher/assessment');
+    if (status === 'authenticated' && !isAdminRole((session?.user as any)?.role)) router.push('/teacher/assessment');
   }, [status, session]);
 
   async function loadTeachers() {
@@ -106,6 +107,7 @@ export default function TeachersPage() {
             <label className="block text-xs font-medium text-gray-600 mb-1">Role *</label>
             <select className="w-full border rounded-lg p-2 text-sm" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
               <option value="TEACHER">Teacher</option>
+              <option value="CENTER_HEAD">Center Head</option>
               <option value="ADMIN">Admin</option>
             </select>
           </div>
@@ -116,6 +118,9 @@ export default function TeachersPage() {
               <Field label="Class *" value={form.assignedClass} onChange={(v) => setForm({ ...form, assignedClass: v })} placeholder="e.g. LKG" />
               <Field label="Section *" value={form.assignedSection} onChange={(v) => setForm({ ...form, assignedSection: v })} placeholder="e.g. A" />
             </>
+          )}
+          {form.role === 'CENTER_HEAD' && (
+            <Field label="Branch *" value={form.branch} onChange={(v) => setForm({ ...form, branch: v })} placeholder="e.g. Chennai — the center they head" />
           )}
 
           <div className="col-span-2 flex items-center gap-3 mt-2">
@@ -134,7 +139,7 @@ export default function TeachersPage() {
               {teachers.map((t) => (
                 <tr key={t.id} className="border-b last:border-0">
                   <td className="py-1">{t.name}</td><td>{t.email}</td>
-                  <td><span className={`px-2 py-0.5 rounded-full text-xs ${t.role === 'ADMIN' ? 'bg-ns-purple/20 text-ns-purple' : 'bg-ns-blue/20 text-ns-blue'}`}>{t.role}</span></td>
+                  <td><span className={`px-2 py-0.5 rounded-full text-xs ${t.role === 'ADMIN' ? 'bg-ns-purple/20 text-ns-purple' : t.role === 'CENTER_HEAD' ? 'bg-ns-pink/20 text-ns-pink' : 'bg-ns-blue/20 text-ns-blue'}`}>{t.role === 'CENTER_HEAD' ? 'Center Head' : t.role}</span></td>
                   <td>{t.assignedClass ? `${t.assignedClass}-${t.assignedSection}` : '—'}</td>
                   <td><span className={`px-2 py-0.5 rounded-full text-xs ${t.isActive !== 'false' ? 'bg-ns-green/20 text-ns-green' : 'bg-gray-200'}`}>{t.isActive !== 'false' ? 'Active' : 'Inactive'}</span></td>
                   <td className="space-x-2 whitespace-nowrap">
@@ -163,6 +168,7 @@ export default function TeachersPage() {
             <label className="block text-xs font-medium text-gray-600 mb-1">Role</label>
             <select className="w-full border rounded-lg p-2 text-sm mb-3" value={editForm.role} onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}>
               <option value="TEACHER">Teacher</option>
+              <option value="CENTER_HEAD">Center Head</option>
               <option value="ADMIN">Admin</option>
             </select>
 
@@ -174,6 +180,12 @@ export default function TeachersPage() {
                 <input className="w-full border rounded-lg p-2 text-sm mb-3" value={editForm.assignedClass} onChange={(e) => setEditForm({ ...editForm, assignedClass: e.target.value })} />
                 <label className="block text-xs font-medium text-gray-600 mb-1">Section</label>
                 <input className="w-full border rounded-lg p-2 text-sm mb-3" value={editForm.assignedSection} onChange={(e) => setEditForm({ ...editForm, assignedSection: e.target.value })} />
+              </>
+            )}
+            {editForm.role === 'CENTER_HEAD' && (
+              <>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Branch</label>
+                <input className="w-full border rounded-lg p-2 text-sm mb-3" value={editForm.branch} onChange={(e) => setEditForm({ ...editForm, branch: e.target.value })} />
               </>
             )}
 

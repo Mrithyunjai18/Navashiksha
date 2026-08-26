@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { isAdminRole } from '@/lib/roles';
 
 const TYPE_LABEL: Record<string, string> = { text: 'Short Text', textarea: 'Paragraph', single_select: 'Single Choice', multi_select: 'Multiple Choice' };
 
@@ -29,7 +30,7 @@ export default function CustomQuestionsPage() {
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login');
-    if (status === 'authenticated' && (session?.user as any)?.role !== 'ADMIN') router.push('/teacher/assessment');
+    if (status === 'authenticated' && !isAdminRole((session?.user as any)?.role)) router.push('/teacher/assessment');
   }, [status, session]);
 
   async function load() {
