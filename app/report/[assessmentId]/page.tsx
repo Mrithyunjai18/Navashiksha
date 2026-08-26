@@ -5,6 +5,7 @@ import BackButton from '@/components/BackButton';
 import DeleteReportButton from '@/components/DeleteReportButton';
 import ReportHeader from '@/components/ReportHeader';
 import ShareToWhatsAppButton from '@/components/ShareToWhatsAppButton';
+import EditReportLink from '@/components/EditReportLink';
 import { AttendanceRing, SkillBar } from '@/components/ReportCharts';
 import { headers } from 'next/headers';
 
@@ -43,7 +44,7 @@ export default async function ParentReportPage({ params }: { params: { assessmen
       <div className="max-w-xl mx-auto mb-3 print:hidden flex justify-between items-center">
         <BackButton />
         <div className="flex items-center gap-3">
-          <a href={`/admin/assessments/${a.id}/edit`} className="text-ns-purple font-semibold text-sm">Edit (Admin) →</a>
+          <EditReportLink assessmentId={a.id} />
           <DeleteReportButton assessmentId={a.id} />
         </div>
       </div>
@@ -135,10 +136,12 @@ export default async function ParentReportPage({ params }: { params: { assessmen
 
       <div className="max-w-xl mx-auto mt-2 flex gap-2 print:hidden">
         <ShareToWhatsAppButton
+          targetId="report-card"
           parentName={student?.parentName || ''}
           parentPhone={student?.parentPhone || ''}
           studentName={student?.name || ''}
           reportUrl={reportUrl}
+          fileName={`${student?.name?.replace(/\s+/g, '_') || 'student'}_Week_${a.weekStartDate}`}
         />
       </div>
     </main>
