@@ -17,6 +17,10 @@ export default function TeachersPage() {
   const [editSaving, setEditSaving] = useState(false);
   const [editMessage, setEditMessage] = useState('');
 
+  const [deleteTarget, setDeleteTarget] = useState<any | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [listError, setListError] = useState('');
+
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login');
     if (status === 'authenticated' && (session?.user as any)?.role !== 'ADMIN') router.push('/teacher/assessment');
@@ -65,10 +69,21 @@ export default function TeachersPage() {
   }
 
   async function toggleActive(t: any) {
-    await fetch(`/api/admin/teachers/${t.id}`, {
+    setListError('');
+    const res = await fetch(`/api/admin/teachers/${t.id}`, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ isActive: t.isActive === 'false' }),
     });
+    if (!res.ok) { const d = await res.json().catch(() => ({})); setListError(`❌ ${d.error || 'Could not update status.'}`); return; }
+    loadTeachers();
+  }
+
+  async function confirmDelete() {
+    setDeleting(true); setListError('');
+    const res = await fetch(`/api/admin/teachers/${deleteTarget.id}`, { method: 'DELETE' });
+    setDeleting(false);
+    if (!res.ok) { const d = await res.json().catch(() => ({})); setListError(`❌ ${d.error || 'Could not delete user.'}`); setDeleteTarget(null); return; }
+    setDeleteTarget(null);
     loadTeachers();
   }
 
@@ -112,6 +127,7 @@ export default function TeachersPage() {
 
         <div className="bg-white rounded-xl2 shadow-sm p-5">
           <h2 className="font-bold text-lg text-ns-purple mb-3">All Users ({teachers.length})</h2>
+          {listError && <p className="text-sm text-red-600 mb-3">{listError}</p>}
           <table className="w-full text-sm">
             <thead><tr className="text-left text-gray-500 border-b"><th className="py-1">Name</th><th>Email</th><th>Role</th><th>Class</th><th>Status</th><th>Actions</th></tr></thead>
             <tbody>
@@ -121,9 +137,10 @@ export default function TeachersPage() {
                   <td><span className={`px-2 py-0.5 rounded-full text-xs ${t.role === 'ADMIN' ? 'bg-ns-purple/20 text-ns-purple' : 'bg-ns-blue/20 text-ns-blue'}`}>{t.role}</span></td>
                   <td>{t.assignedClass ? `${t.assignedClass}-${t.assignedSection}` : '—'}</td>
                   <td><span className={`px-2 py-0.5 rounded-full text-xs ${t.isActive !== 'false' ? 'bg-ns-green/20 text-ns-green' : 'bg-gray-200'}`}>{t.isActive !== 'false' ? 'Active' : 'Inactive'}</span></td>
-                  <td className="space-x-2">
+                  <td className="space-x-2 whitespace-nowrap">
                     <button onClick={() => openEdit(t)} className="text-ns-blue">Edit</button>
                     <button onClick={() => toggleActive(t)} className="text-gray-500">{t.isActive !== 'false' ? 'Deactivate' : 'Activate'}</button>
+                    <button onClick={() => setDeleteTarget(t)} className="text-red-500">Delete</button>
                   </td>
                 </tr>
               ))}
@@ -167,6 +184,19 @@ export default function TeachersPage() {
             <div className="flex gap-2">
               <button onClick={() => setEditTarget(null)} className="flex-1 py-2 rounded-xl2 border">Cancel</button>
               <button onClick={submitEdit} disabled={editSaving} className="flex-1 py-2 rounded-xl2 bg-ns-purple text-white font-semibold">{editSaving ? 'Saving…' : 'Save'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteTarget && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl2 p-5 w-full max-w-sm">
+            <h3 className="font-bold text-lg text-red-600 mb-2">Delete {deleteTarget.name}?</h3>
+            <p className="text-sm text-gray-600 mb-4">This permanently removes their login — they will no longer be able to sign in. Any assessments they already submitted stay in your records unaffected. Consider Deactivate instead if you just want to temporarily block access.</p>
+            <div className="flex gap-2">
+              <button onClick={() => setDeleteTarget(null)} className="flex-1 py-2 rounded-xl2 border">Cancel</button>
+              <button onClick={confirmDelete} disabled={deleting} className="flex-1 py-2 rounded-xl2 bg-red-600 text-white font-semibold">{deleting ? 'Deleting…' : 'Delete'}</button>
             </div>
           </div>
         </div>
