@@ -140,6 +140,7 @@ export default async function ParentReportPage({ params }: { params: { assessmen
           parentName={student?.parentName || ''}
           parentPhone={student?.parentPhone || ''}
           studentName={student?.name || ''}
+          studentClass={student ? `${student.class}-${student.section}` : ''}
           reportUrl={reportUrl}
           fileName={`${student?.name?.replace(/\s+/g, '_') || 'student'}_Week_${a.weekStartDate}`}
         />
