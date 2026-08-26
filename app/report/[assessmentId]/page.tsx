@@ -2,6 +2,7 @@ import { findRowByKey, readTab } from '@/lib/sheets';
 import { notFound } from 'next/navigation';
 import ReportShareBar from '@/components/ReportShareBar';
 import BackButton from '@/components/BackButton';
+import DeleteReportButton from '@/components/DeleteReportButton';
 import { AttendanceRing, SkillBar } from '@/components/ReportCharts';
 
 const PROGRESS_LABEL: Record<string, string> = { NEEDS_SUPPORT: 'Needs Support', DEVELOPING: 'Developing', GOOD: 'Good', EXCELLENT: 'Excellent' };
@@ -34,7 +35,10 @@ export default async function ParentReportPage({ params }: { params: { assessmen
     <main className="bg-ns-cream min-h-screen py-6 px-3 print:p-0">
       <div className="max-w-xl mx-auto mb-3 print:hidden flex justify-between items-center">
         <BackButton />
-        <a href={`/admin/assessments/${a.id}/edit`} className="text-ns-purple font-semibold text-sm">Edit (Admin) →</a>
+        <div className="flex items-center gap-3">
+          <a href={`/admin/assessments/${a.id}/edit`} className="text-ns-purple font-semibold text-sm">Edit (Admin) →</a>
+          <DeleteReportButton assessmentId={a.id} />
+        </div>
       </div>
       <div id="report-card" className="max-w-xl mx-auto bg-white rounded-xl2 overflow-hidden shadow-lg print:shadow-none">
         <div className="bg-ns-yellow p-5 text-center">
