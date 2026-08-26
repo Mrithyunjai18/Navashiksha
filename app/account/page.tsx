@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function AccountPage() {
   const { data: session, status } = useSession();
@@ -47,7 +48,15 @@ export default function AccountPage() {
   return (
     <main className="min-h-screen bg-ns-cream p-4">
       <div className="max-w-md mx-auto">
-        <h1 className="text-2xl font-extrabold text-ns-purple mb-1">My Account</h1>
+        <div className="flex justify-between items-center mb-1">
+          <h1 className="text-2xl font-extrabold text-ns-purple">My Account</h1>
+          <Link
+            href={(session?.user as any)?.role === 'ADMIN' || (session?.user as any)?.role === 'CENTER_HEAD' ? '/admin' : '/teacher/assessment'}
+            className="text-ns-blue text-sm"
+          >
+            ← Back
+          </Link>
+        </div>
         <p className="text-sm text-gray-500 mb-6">Update your login email or password.</p>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-xl2 shadow-sm p-5 space-y-3">
