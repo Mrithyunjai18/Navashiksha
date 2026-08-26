@@ -135,12 +135,10 @@ export default async function ParentReportPage({ params }: { params: { assessmen
 
       <div className="max-w-xl mx-auto mt-2 flex gap-2 print:hidden">
         <ShareToWhatsAppButton
-          targetId="report-card"
           parentName={student?.parentName || ''}
           parentPhone={student?.parentPhone || ''}
           studentName={student?.name || ''}
           reportUrl={reportUrl}
-          fileName={`${student?.name?.replace(/\s+/g, '_') || 'student'}_Week_${a.weekStartDate}`}
         />
       </div>
     </main>

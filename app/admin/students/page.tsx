@@ -97,8 +97,8 @@ export default function StudentsPage() {
           <Field label="Class *" value={form.class} onChange={(v) => setForm({ ...form, class: v })} placeholder="e.g. LKG" />
           <Field label="Section *" value={form.section} onChange={(v) => setForm({ ...form, section: v })} placeholder="e.g. A" />
           <Field label="Date of Birth" type="date" value={form.dateOfBirth} onChange={(v) => setForm({ ...form, dateOfBirth: v })} />
-          <Field label="Parent Name" value={form.parentName} onChange={(v) => setForm({ ...form, parentName: v })} />
-          <Field label="Parent Phone" value={form.parentPhone} onChange={(v) => setForm({ ...form, parentPhone: v })} />
+          <Field label="Parent Name *" value={form.parentName} onChange={(v) => setForm({ ...form, parentName: v })} />
+          <Field label="Parent WhatsApp Number * (10-digit mobile)" value={form.parentPhone} onChange={(v) => setForm({ ...form, parentPhone: v })} placeholder="e.g. 9876543210" />
           <Field label="Parent Email" value={form.parentEmail} onChange={(v) => setForm({ ...form, parentEmail: v })} />
           <div className="col-span-2 flex items-center gap-3 mt-2">
             <button disabled={saving} className="px-4 py-2 rounded-xl2 bg-ns-purple text-white font-semibold">{saving ? 'Saving…' : 'Add Student'}</button>
@@ -145,8 +145,8 @@ export default function StudentsPage() {
               <Field label="Class" value={editForm.class || ''} onChange={(v) => setEditForm({ ...editForm, class: v })} />
               <Field label="Section" value={editForm.section || ''} onChange={(v) => setEditForm({ ...editForm, section: v })} />
               <Field label="Date of Birth" type="date" value={editForm.dateOfBirth || ''} onChange={(v) => setEditForm({ ...editForm, dateOfBirth: v })} />
-              <Field label="Parent Name" value={editForm.parentName || ''} onChange={(v) => setEditForm({ ...editForm, parentName: v })} />
-              <Field label="Parent Phone" value={editForm.parentPhone || ''} onChange={(v) => setEditForm({ ...editForm, parentPhone: v })} />
+              <Field label="Parent Name *" value={editForm.parentName || ''} onChange={(v) => setEditForm({ ...editForm, parentName: v })} />
+              <Field label="Parent WhatsApp Number * (10-digit mobile)" value={editForm.parentPhone || ''} onChange={(v) => setEditForm({ ...editForm, parentPhone: v })} />
               <Field label="Parent Email" value={editForm.parentEmail || ''} onChange={(v) => setEditForm({ ...editForm, parentEmail: v })} />
               <div>
                 <label className="block text-xs font-medium text-gray-600 mb-1">Status</label>

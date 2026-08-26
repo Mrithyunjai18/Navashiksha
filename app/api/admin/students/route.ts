@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 import { appendRow, readTab, newId } from '@/lib/sheets';
 import { isAdminRole } from '@/lib/roles';
+import { isValidWhatsAppNumber } from '@/lib/whatsapp';
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -18,6 +19,10 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   if (!body.name || !body.branch || !body.class || !body.section)
     return NextResponse.json({ error: 'Name, branch, class and section are required.' }, { status: 400 });
+  if (!body.parentName?.trim())
+    return NextResponse.json({ error: 'Parent Name is required.' }, { status: 400 });
+  if (!body.parentPhone?.trim() || !isValidWhatsAppNumber(body.parentPhone))
+    return NextResponse.json({ error: 'A valid Parent WhatsApp Number is required (10-digit mobile number).' }, { status: 400 });
 
   const existing = await readTab<any>('Students');
   const nextNum = existing.length + 1;
