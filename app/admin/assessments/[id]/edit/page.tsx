@@ -85,7 +85,7 @@ export default function EditAssessmentPage() {
     setDeleting(true);
     await fetch(`/api/admin/assessments/${id}`, { method: 'DELETE' });
     setDeleting(false);
-    router.push('/admin');
+    window.location.href = '/admin'; // hard navigation — avoids Next.js client router cache showing the stale (pre-delete) dashboard
   }
 
   if (!form || !master) return <main className="p-6 text-center text-gray-400">Loading…</main>;

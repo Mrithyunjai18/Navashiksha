@@ -18,7 +18,7 @@ export default function DeleteReportButton({ assessmentId }: { assessmentId: str
     const res = await fetch(`/api/admin/assessments/${assessmentId}`, { method: 'DELETE' });
     setDeleting(false);
     if (!res.ok) { const d = await res.json().catch(() => ({})); setError(d.error || 'Could not delete.'); return; }
-    router.push('/admin');
+    window.location.href = '/admin'; // hard navigation — avoids Next.js client router cache showing the stale (pre-delete) dashboard
   }
 
   return (
