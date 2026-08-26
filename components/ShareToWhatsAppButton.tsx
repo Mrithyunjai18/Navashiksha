@@ -4,9 +4,9 @@ import { useSession } from 'next-auth/react';
 import { isValidWhatsAppNumber, normalizeWhatsAppNumber } from '@/lib/whatsapp';
 
 export default function ShareToWhatsAppButton({
-  targetId, parentName, parentPhone, studentName, reportUrl, fileName,
+  targetId, parentName, parentPhone, studentName, studentClass, reportUrl, fileName, instagramHandle = 'navashikshaplayschoolhsr',
 }: {
-  targetId: string; parentName: string; parentPhone: string; studentName: string; reportUrl: string; fileName: string;
+  targetId: string; parentName: string; parentPhone: string; studentName: string; studentClass?: string; reportUrl: string; fileName: string; instagramHandle?: string;
 }) {
   const { data: session } = useSession();
   const [busy, setBusy] = useState(false);
@@ -16,10 +16,19 @@ export default function ShareToWhatsAppButton({
   // when the parent themselves opens the shared report link with no session.
   if (!session?.user) return null;
 
-  const message = `Hi ${parentName || 'there'},\nPlease find the weekly report of your child ${studentName} from Navashiksha Play School.\n📄 Weekly Report: ${reportUrl}\nThank you for your continued support. 💛\nRegards,\nNavashiksha Play School`;
+  const studentLabel = studentClass ? `${studentName} (${studentClass})` : studentName;
+  const message = `Hi ${parentName || 'there'},\nPlease find the weekly report of your child ${studentLabel} from Navashiksha Play School.\n📄 Weekly Report: ${reportUrl}\nThank you for your continued support. 💛\nFor more updates, follow us on Instagram: instagram.com/${instagramHandle}\nRegards,\nNavashiksha Play School`;
 
   async function handleClick() {
     if (!valid) return;
+
+    // Open the tab synchronously, immediately on click — browsers block window.open()
+    // calls that happen after an await (like the screenshot capture below), treating
+    // them as unrequested popups. Opening a blank tab first, then pointing it at the
+    // right URL once ready, avoids that block entirely.
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const waTab = isMobile ? null : window.open('about:blank', '_blank');
+
     setBusy(true);
 
     const html2canvas = (await import('html2canvas')).default;
@@ -29,9 +38,10 @@ export default function ShareToWhatsAppButton({
 
     setBusy(false);
 
-    // Mobile with native share support (Android Chrome, iOS Safari): share the actual
-    // report image + message — the person picks WhatsApp from their share sheet.
-    if (blob && navigator.share && navigator.canShare?.({ files: [new File([blob], `${fileName}.png`, { type: 'image/png' })] })) {
+    // Only use the native OS share sheet on actual mobile devices — desktop Safari/macOS
+    // also implements the Web Share API, but its share sheet only lists installed Mac
+    // apps (AirDrop, Mail, Messages...), never WhatsApp Web, so it's useless there.
+    if (isMobile && blob && navigator.share && navigator.canShare?.({ files: [new File([blob], `${fileName}.png`, { type: 'image/png' })] })) {
       const file = new File([blob], `${fileName}.png`, { type: 'image/png' });
       try {
         await navigator.share({ files: [file], text: message, title: 'Navashiksha Weekly Report' });
@@ -41,8 +51,8 @@ export default function ShareToWhatsAppButton({
       }
     }
 
-    // Desktop / no native file-share support: WhatsApp Web can't accept a pre-attached
-    // image via URL, so download the image and open WhatsApp with the text pre-filled —
+    // Desktop (any browser): WhatsApp Web can't accept a pre-attached image via URL,
+    // so download the image and open WhatsApp Web with the text pre-filled —
     // the admin then drags the downloaded image into the chat manually.
     if (blob) {
       const url = URL.createObjectURL(blob);
@@ -51,7 +61,9 @@ export default function ShareToWhatsAppButton({
       URL.revokeObjectURL(url);
     }
     const normalized = normalizeWhatsAppNumber(parentPhone);
-    window.open(`https://wa.me/${normalized}?text=${encodeURIComponent(message)}`, '_blank');
+    const waUrl = `https://wa.me/${normalized}?text=${encodeURIComponent(message)}`;
+    if (waTab) waTab.location.href = waUrl;
+    else window.open(waUrl, '_blank'); // fallback if the pre-open didn't work for some reason
   }
 
   if (!valid) {
