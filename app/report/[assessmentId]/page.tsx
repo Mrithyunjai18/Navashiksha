@@ -25,7 +25,6 @@ export default async function ParentReportPage({ params }: { params: { assessmen
   const a = await findRowByKey<any>('Assessments', 'id', params.assessmentId);
   if (!a) return notFound();
   const student = await findRowByKey<any>('Students', 'id', a.studentId);
-  const concernRows = await readTab<any>('ParentConcerns');
   const customQuestions = await readTab<any>('CustomQuestions');
   const customAnswerRows = (await readTab<any>('CustomAnswers')).filter((r) => r.assessmentId === a.id);
 
@@ -38,7 +37,6 @@ export default async function ParentReportPage({ params }: { params: { assessmen
   const focusAreas = unpackList(a.focusAreas);
   const schoolActivities = unpackList(a.schoolActivities);
   const homeActivities = unpackList(a.homeActivities);
-  const concernCodes = unpackList(a.parentConcernCodes);
 
   return (
     <main className="bg-ns-cream min-h-screen py-6 px-3 print:p-0">
@@ -110,14 +108,6 @@ export default async function ParentReportPage({ params }: { params: { assessmen
           {schoolActivities.length > 0 && <Section title="🏫 What We Did at School"><ul className="list-disc pl-5">{schoolActivities.map((s) => <li key={s}>{s}</li>)}</ul></Section>}
           {homeActivities.length > 0 && <Section title="🏠 Try This at Home"><ul className="list-disc pl-5">{homeActivities.map((s) => <li key={s}>{s}</li>)}</ul></Section>}
 
-          {concernCodes.length > 0 && (
-            <Section title="🤝 Following Up On Your Concern">
-              {concernCodes.map((code) => {
-                const c = concernRows.find((r) => r.code === code);
-                return c ? <p key={code} className="font-semibold">{c.title}</p> : null;
-              })}
-            </Section>
-          )}
 
           {customAnswerRows.length > 0 && (
             <Section title="📝 Additional Notes">

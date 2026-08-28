@@ -5,17 +5,7 @@ import { useMemo, useState } from 'react';
 type ProgressLevel = 'NEEDS_SUPPORT' | 'DEVELOPING' | 'GOOD' | 'EXCELLENT';
 type RecognitionLevel = 'NOT_YET_INTRODUCED' | 'WITH_HELP' | 'INDEPENDENT';
 
-interface ParentConcern {
-  id: string; code: string; title: string;
-  signs: { id: string; label: string }[];
-  schoolSupports: { id: string; label: string }[];
-  homeTips: { id: string; label: string }[];
-  linkedFocusAreas: { id: string; label: string }[];
-  linkedLearningReadiness: { id: string; label: string }[];
-}
-
 interface FormMaster {
-  concerns: ParentConcern[];
   socialAreas: { id: string; label: string }[];
   readinessAreas: { id: string; label: string }[];
   focusAreas: { id: string; label: string }[];
@@ -35,10 +25,6 @@ export default function AssessmentForm({ master, previousWeek }: { master: FormM
   const [workingDays, setWorkingDays] = useState(5);
   const [daysPresent, setDaysPresent] = useState(5);
 
-  // ── PRIMARY SELECTOR: Parent Concern(s) for this student this week ──
-  const [selectedConcernIds, setSelectedConcernIds] = useState<string[]>([]);
-  const [concernData, setConcernData] = useState<Record<string, { signs: string[]; school: string[]; home: string[]; note: string }>>({});
-
   const [socialSelected, setSocialSelected] = useState<Record<string, ProgressLevel | ''>>({});
   const [readinessSelected, setReadinessSelected] = useState<Record<string, ProgressLevel | ''>>({});
   const [focusSelected, setFocusSelected] = useState<string[]>([]);
@@ -52,35 +38,10 @@ export default function AssessmentForm({ master, previousWeek }: { master: FormM
 
   const attendancePct = useMemo(() => (workingDays ? Math.round((daysPresent / workingDays) * 1000) / 10 : 0), [daysPresent, workingDays]);
 
-  function toggleConcern(c: ParentConcern) {
-    setSelectedConcernIds((prev) => {
-      const active = prev.includes(c.id);
-      if (active) {
-        const next = { ...concernData }; delete next[c.id]; setConcernData(next);
-        return prev.filter((id) => id !== c.id);
-      }
-      // Note: deliberately does NOT auto-select any Focus Areas or other fields —
-      // the report should only ever reflect exactly what the teacher chose,
-      // nothing inferred or added automatically.
-      setConcernData((d) => ({ ...d, [c.id]: { signs: [], school: [], home: [], note: '' } }));
-      return [...prev, c.id];
-    });
-  }
-
-  function toggleWithin(concernId: string, bucket: 'signs' | 'school' | 'home', label: string) {
-    setConcernData((prev) => {
-      const entry = prev[concernId] ?? { signs: [], school: [], home: [], note: '' };
-      const arr = entry[bucket];
-      const nextArr = arr.includes(label) ? arr.filter((l) => l !== label) : [...arr, label];
-      return { ...prev, [concernId]: { ...entry, [bucket]: nextArr } };
-    });
-  }
-
   async function submit(finalStatus: 'DRAFT' | 'SUBMITTED') {
     setStatus('saving');
     const payload = {
       studentId, weekStartDate, workingDays, daysPresent, status: finalStatus,
-      parentConcerns: selectedConcernIds.map((id) => ({ concernId: id, ...concernData[id] })),
       socialEmotional: socialSelected, learningReadiness: readinessSelected,
       focusAreaIds: focusSelected, recognition, language, maths, concepts,
       mostEnjoyedActivity: mostEnjoyed, weeklyStarMoment: starMoment,
@@ -114,36 +75,6 @@ export default function AssessmentForm({ master, previousWeek }: { master: FormM
             <input type="number" min={0} max={workingDays} className="w-full border rounded-lg p-2" value={daysPresent} onChange={(e) => setDaysPresent(+e.target.value)} /></div>
         </div>
         <p className="mt-2 text-sm text-gray-600">Attendance: <strong>{daysPresent} / {workingDays} days — {attendancePct}%</strong> (auto-calculated)</p>
-      </section>
-
-      {/* PRIMARY: Parent Concern selector */}
-      <section className="bg-white rounded-xl2 shadow-sm p-5 mb-4 border-2 border-ns-purple/30">
-        <h2 className="font-bold text-lg mb-1 text-ns-purple">Parent Concern (Primary)</h2>
-        <p className="text-sm text-gray-500 mb-3">If a parent has raised a concern this week, select it — related signs, school supports and home tips will appear as pick-lists below for you to choose from.</p>
-        <div className="grid grid-cols-1 gap-2">
-          {master.concerns.map((c) => {
-            const active = selectedConcernIds.includes(c.id);
-            return (
-              <div key={c.id} className={`rounded-lg border ${active ? 'border-ns-purple bg-ns-purple/5' : 'border-gray-200'}`}>
-                <button type="button" onClick={() => toggleConcern(c)} className="w-full text-left p-3 font-medium flex justify-between items-center">
-                  {c.title} <span className="text-xs text-gray-400">{active ? '▲' : '▼'}</span>
-                </button>
-                {active && (
-                  <div className="p-3 pt-0 space-y-3">
-                    <OptionGroup label="Signs observed" options={c.signs.map((s) => s.label)}
-                      selected={concernData[c.id]?.signs ?? []} onToggle={(l) => toggleWithin(c.id, 'signs', l)} />
-                    <OptionGroup label="School support used" options={c.schoolSupports.map((s) => s.label)}
-                      selected={concernData[c.id]?.school ?? []} onToggle={(l) => toggleWithin(c.id, 'school', l)} />
-                    <OptionGroup label="Home tips to give parent" options={c.homeTips.map((s) => s.label)}
-                      selected={concernData[c.id]?.home ?? []} onToggle={(l) => toggleWithin(c.id, 'home', l)} />
-                    <textarea placeholder="Optional teacher note on this concern…" className="w-full border rounded-lg p-2 text-sm"
-                      value={concernData[c.id]?.note ?? ''} onChange={(e) => setConcernData((d) => ({ ...d, [c.id]: { ...(d[c.id] ?? { signs: [], school: [], home: [] }), note: e.target.value } as any }))} />
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
       </section>
 
       {/* Social & Emotional */}
@@ -290,7 +221,6 @@ function CustomQuestionBlock({
   const value = customAnswers[question.id];
 
   const children = allQuestions.filter((q) => q.parentQuestionId === question.id);
-  // a sub-question shows only if its trigger option is among the current answer(s)
   const currentAnswerList = Array.isArray(value) ? value : value ? [value] : [];
 
   return (

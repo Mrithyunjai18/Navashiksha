@@ -8,9 +8,8 @@ export async function GET() {
   if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const user = session.user as any;
 
-  const [students, concernRows, masterRows, customQuestions] = await Promise.all([
+  const [students, masterRows, customQuestions] = await Promise.all([
     readTab<any>('Students'),
-    readTab<any>('ParentConcerns'),
     readTab<{ listName: string; label: string; sortOrder: string }>('MasterLists'),
     readTab<any>('CustomQuestions'),
   ]);
@@ -19,20 +18,10 @@ export async function GET() {
     ? students.filter((s) => s.status !== 'Inactive')
     : students.filter((s) => s.status !== 'Inactive' && s.class === user.assignedClass && s.section === user.assignedSection);
 
-  const concerns = concernRows.map((c) => ({
-    id: c.code, code: c.code, title: c.title,
-    signs: (c.signs || '').split('|').filter(Boolean).map((label: string) => ({ id: label, label })),
-    schoolSupports: (c.schoolSupports || '').split('|').filter(Boolean).map((label: string) => ({ id: label, label })),
-    homeTips: (c.homeTips || '').split('|').filter(Boolean).map((label: string) => ({ id: label, label })),
-    linkedFocusAreas: (c.linkedFocusAreas || '').split('|').filter(Boolean).map((label: string) => ({ id: label, label })),
-    linkedLearningReadiness: [],
-  }));
-
   const pickList = (name: string) => masterRows.filter((m) => m.listName === name).sort((a, b) => +a.sortOrder - +b.sortOrder).map((m) => ({ id: m.label, label: m.label }));
 
   return NextResponse.json({
     students: visibleStudents.map((s) => ({ id: s.id, name: s.name, studentCode: s.studentCode })),
-    concerns,
     socialAreas: pickList('SocialEmotional'),
     readinessAreas: pickList('LearningReadiness'),
     focusAreas: pickList('FocusAreas'),

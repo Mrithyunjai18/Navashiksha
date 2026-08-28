@@ -91,12 +91,6 @@ export async function GET(req: NextRequest) {
   for (const r of rows) for (const f of unpackList(r.focusAreas)) focusCounts[f] = (focusCounts[f] || 0) + 1;
   const topFocusAreas = Object.entries(focusCounts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([label, count]) => ({ label, count }));
 
-  // Parent concerns raised in this window
-  const concernCodesRaised = new Set<string>();
-  for (const r of rows) for (const c of unpackList(r.parentConcernCodes)) concernCodesRaised.add(c);
-  const concernRows = await readTab<any>('ParentConcerns');
-  const concernsRaised = Array.from(concernCodesRaised).map((code) => concernRows.find((c) => c.code === code)?.title).filter(Boolean);
-
   return NextResponse.json({
     student,
     weeksCount: rows.length,
@@ -109,6 +103,5 @@ export async function GET(req: NextRequest) {
     starMoments,
     enjoyedActivities,
     topFocusAreas,
-    concernsRaised,
   });
 }

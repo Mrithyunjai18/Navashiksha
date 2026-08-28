@@ -119,12 +119,6 @@ export default function ProgressReportPage() {
                   </RepSection>
                 )}
 
-                {data.concernsRaised.length > 0 && (
-                  <RepSection title="🤝 Parent Concerns Addressed This Period">
-                    {data.concernsRaised.map((c: string) => <p key={c} className="text-sm font-medium">{c}</p>)}
-                  </RepSection>
-                )}
-
                 <RepSection title="🔤 Recognition Progress (latest)">
                   <div className="flex flex-wrap gap-2">
                     {data.recognitionFinal.letter && <Badge color="gray">Letters: {LEVEL_LABEL[data.recognitionFinal.letter]}</Badge>}
