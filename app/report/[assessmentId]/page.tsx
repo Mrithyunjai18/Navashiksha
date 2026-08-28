@@ -11,6 +11,7 @@ import { headers } from 'next/headers';
 
 const PROGRESS_LABEL: Record<string, string> = { NEEDS_SUPPORT: 'Needs Support', DEVELOPING: 'Developing', GOOD: 'Good', EXCELLENT: 'Excellent' };
 const PROGRESS_COLOR: Record<string, string> = { NEEDS_SUPPORT: 'bg-orange-200 text-orange-800', DEVELOPING: 'bg-yellow-200 text-yellow-800', GOOD: 'bg-green-200 text-green-800', EXCELLENT: 'bg-emerald-300 text-emerald-900' };
+const RECOG_LABEL: Record<string, string> = { NOT_YET_INTRODUCED: 'Not yet introduced', WITH_HELP: 'With help', INDEPENDENT: 'Independent' };
 
 function unpack(field: string | undefined): Record<string, string> {
   if (!field) return {};
@@ -75,17 +76,19 @@ export default async function ParentReportPage({ params }: { params: { assessmen
             </div>
           )}
 
-          {(a.language || a.maths || a.concepts) && (
+          {(a.language || a.maths || a.concepts || a.letterRecognition || a.numberRecognition || a.shapeRecognition || a.colourRecognition) && (
             <Section title="📚 Learning Areas">
               {a.language && <p><strong>Language:</strong> {a.language}</p>}
               {a.maths && <p><strong>Maths:</strong> {a.maths}</p>}
               {a.concepts && <p><strong>Concepts:</strong> {a.concepts}</p>}
-              <div className="flex flex-wrap gap-2 mt-2">
-                {a.letterRecognition && <Badge>Letters: {a.letterRecognition}</Badge>}
-                {a.numberRecognition && <Badge>Numbers: {a.numberRecognition}</Badge>}
-                {a.shapeRecognition && <Badge>Shapes: {a.shapeRecognition}</Badge>}
-                {a.colourRecognition && <Badge>Colours: {a.colourRecognition}</Badge>}
-              </div>
+              {(a.letterRecognition || a.numberRecognition || a.shapeRecognition || a.colourRecognition) && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {a.letterRecognition && <Badge>Letters: {RECOG_LABEL[a.letterRecognition] || a.letterRecognition}</Badge>}
+                  {a.numberRecognition && <Badge>Numbers: {RECOG_LABEL[a.numberRecognition] || a.numberRecognition}</Badge>}
+                  {a.shapeRecognition && <Badge>Shapes: {RECOG_LABEL[a.shapeRecognition] || a.shapeRecognition}</Badge>}
+                  {a.colourRecognition && <Badge>Colours: {RECOG_LABEL[a.colourRecognition] || a.colourRecognition}</Badge>}
+                </div>
+              )}
             </Section>
           )}
 
