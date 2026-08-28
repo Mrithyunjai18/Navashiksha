@@ -35,9 +35,14 @@ export function SkillBar({ label, level }: { label: string; level?: string }) {
         <span className="font-medium text-gray-700">{label}</span>
         <span className="text-gray-400">{level ? level.replace('_', ' ') : '—'}</span>
       </div>
-      <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-        <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
-      </div>
+      {/* Single-element gradient bar instead of a nested clipped fill div —
+          html2canvas (used for the downloadable/shareable image) sometimes
+          misaligns nested overflow-hidden + rounded-full fills, but renders
+          a plain background-gradient correctly every time. */}
+      <div
+        className="h-2 w-full rounded-full"
+        style={{ background: `linear-gradient(to right, ${color} ${pct}%, #f3f4f6 ${pct}%)` }}
+      />
     </div>
   );
 }
