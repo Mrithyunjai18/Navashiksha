@@ -30,13 +30,13 @@ export function SkillBar({ label, level }: { label: string; level?: string }) {
   const pct = level ? LEVEL_SCORE[level] ?? 0 : 0;
   const color = level ? LEVEL_COLOR[level] ?? '#ccc' : '#e5e5e5';
   return (
-    <div className="mb-2">
-      <div className="flex justify-between text-xs mb-0.5">
+    <div className="mb-3">
+      <div className="flex justify-between text-xs mb-1">
         <span className="font-medium text-gray-700">{label}</span>
         <span className="text-gray-400">{level ? level.replace('_', ' ') : '—'}</span>
       </div>
       <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-        <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: color }} />
+        <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
       </div>
     </div>
   );
