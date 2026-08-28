@@ -59,8 +59,9 @@ export default function AssessmentForm({ master, previousWeek }: { master: FormM
         const next = { ...concernData }; delete next[c.id]; setConcernData(next);
         return prev.filter((id) => id !== c.id);
       }
-      // auto-suggest linked Focus Areas + Learning Readiness ratings when a concern is picked
-      setFocusSelected((fPrev) => Array.from(new Set([...fPrev, ...c.linkedFocusAreas.map((f) => f.id)])));
+      // Note: deliberately does NOT auto-select any Focus Areas or other fields —
+      // the report should only ever reflect exactly what the teacher chose,
+      // nothing inferred or added automatically.
       setConcernData((d) => ({ ...d, [c.id]: { signs: [], school: [], home: [], note: '' } }));
       return [...prev, c.id];
     });
@@ -118,7 +119,7 @@ export default function AssessmentForm({ master, previousWeek }: { master: FormM
       {/* PRIMARY: Parent Concern selector */}
       <section className="bg-white rounded-xl2 shadow-sm p-5 mb-4 border-2 border-ns-purple/30">
         <h2 className="font-bold text-lg mb-1 text-ns-purple">Parent Concern (Primary)</h2>
-        <p className="text-sm text-gray-500 mb-3">If a parent has raised a concern this week, select it — related signs, school supports and home tips will appear as pick-lists below, and matching Focus Areas will be pre-selected.</p>
+        <p className="text-sm text-gray-500 mb-3">If a parent has raised a concern this week, select it — related signs, school supports and home tips will appear as pick-lists below for you to choose from.</p>
         <div className="grid grid-cols-1 gap-2">
           {master.concerns.map((c) => {
             const active = selectedConcernIds.includes(c.id);
