@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { readTab } from '@/lib/sheets';
 import Link from 'next/link';
 import { isAdminRole } from '@/lib/roles';
+import AssessmentsTable from '@/components/AssessmentsTable';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,7 +29,20 @@ export default async function AdminDashboard() {
     ['Pending Drafts', drafts.length],
   ] as const;
 
-  const recent = activeAssessments.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || '')).slice(0, 25);
+  const recent = activeAssessments
+    .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''))
+    .slice(0, 300) // reasonable cap for one school's data; adjust if needed
+    .map((a) => {
+      const student = studentMap[a.studentId];
+      return {
+        id: a.id,
+        studentName: student?.name ?? a.studentId,
+        class: student?.class ?? '', section: student?.section ?? '', branch: student?.branch ?? '',
+        weekStartDate: a.weekStartDate, createdBy: a.createdBy,
+        daysPresent: Number(a.daysPresent) || 0, workingDays: Number(a.workingDays) || 0, attendancePct: Number(a.attendancePct) || 0,
+        status: a.status,
+      };
+    });
 
   return (
     <main className="p-6 bg-ns-cream min-h-screen">
@@ -58,26 +72,7 @@ export default async function AdminDashboard() {
           <h2 className="font-bold text-lg">Recent Weekly Assessments</h2>
           <span className="text-xs text-gray-400">Data lives in your Google Sheet — edit rows there directly if needed.</span>
         </div>
-        <table className="w-full text-sm">
-          <thead><tr className="text-left text-gray-500 border-b">
-            <th className="py-2">Student</th><th>Week</th><th>Teacher</th><th>Attendance</th><th>Status</th><th>Actions</th>
-          </tr></thead>
-          <tbody>
-            {recent.map((a) => {
-              const student = studentMap[a.studentId];
-              return (
-                <tr key={a.id} className="border-b last:border-0">
-                  <td className="py-2 font-medium">{student?.name ?? a.studentId}</td>
-                  <td>{a.weekStartDate}</td>
-                  <td>{a.createdBy}</td>
-                  <td>{a.daysPresent}/{a.workingDays} ({a.attendancePct}%)</td>
-                  <td><span className={`px-2 py-0.5 rounded-full text-xs ${a.status === 'SUBMITTED' ? 'bg-ns-green/20 text-ns-green' : 'bg-gray-200 text-gray-600'}`}>{a.status}</span></td>
-                  <td className="space-x-2"><Link className="text-ns-blue" href={`/report/${a.id}`}>Report</Link><Link className="text-ns-purple" href={`/admin/assessments/${a.id}/edit`}>Edit</Link></td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        <AssessmentsTable rows={recent} />
       </div>
     </main>
   );
