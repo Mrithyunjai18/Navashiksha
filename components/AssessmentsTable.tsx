@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 interface Row {
   id: string; studentName: string; class: string; section: string; branch: string;
-  weekStartDate: string; createdBy: string; daysPresent: number; workingDays: number; attendancePct: number; status: string;
+  weekStartDate: string; createdBy: string; daysPresent: number; workingDays: number; attendancePct: number; status: string; seen?: boolean;
 }
 
 type SortKey = 'studentName' | 'weekStartDate' | 'createdBy' | 'attendancePct' | 'status';
@@ -93,7 +93,7 @@ export default function AssessmentsTable({ rows }: { rows: Row[] }) {
         <tbody>
           {filtered.map((r) => (
             <tr key={r.id} className="border-b last:border-0">
-              <td className="py-2 font-medium">{r.studentName}</td>
+              <td className="py-2 font-medium">{r.studentName} {r.seen && <span title="Parent has seen this report">❤️</span>}</td>
               <td>{r.class}-{r.section}</td>
               <td>{r.weekStartDate}</td>
               <td>{r.createdBy}</td>

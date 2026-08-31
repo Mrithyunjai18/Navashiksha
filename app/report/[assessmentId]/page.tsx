@@ -5,6 +5,7 @@ import BackButton from '@/components/BackButton';
 import DeleteReportButton from '@/components/DeleteReportButton';
 import ReportHeader from '@/components/ReportHeader';
 import ShareToWhatsAppButton from '@/components/ShareToWhatsAppButton';
+import AcknowledgeWidget from '@/components/AcknowledgeWidget';
 import EditReportLink from '@/components/EditReportLink';
 import { AttendanceRing, SkillBar } from '@/components/ReportCharts';
 import { headers } from 'next/headers';
@@ -80,7 +81,7 @@ export default async function ParentReportPage({ params }: { params: { assessmen
               {a.maths && <p><strong>Maths:</strong> {a.maths}</p>}
               {a.concepts && <p><strong>Concepts:</strong> {a.concepts}</p>}
               {(a.letterRecognition || a.numberRecognition || a.shapeRecognition || a.colourRecognition) && (
-                <div className="flex flex-wrap gap-2 mt-2">
+                <div className="flex flex-wrap mt-2">
                   {a.letterRecognition && <Badge>Letters: {RECOG_LABEL[a.letterRecognition] || a.letterRecognition}</Badge>}
                   {a.numberRecognition && <Badge>Numbers: {RECOG_LABEL[a.numberRecognition] || a.numberRecognition}</Badge>}
                   {a.shapeRecognition && <Badge>Shapes: {RECOG_LABEL[a.shapeRecognition] || a.shapeRecognition}</Badge>}
@@ -104,7 +105,7 @@ export default async function ParentReportPage({ params }: { params: { assessmen
 
           {a.mostEnjoyedActivity && <Section title="🎨 Favourite Activity"><p>{a.mostEnjoyedActivity}</p></Section>}
 
-          {focusAreas.length > 0 && <Section title="🎯 Focus for Next Week"><div className="flex flex-wrap gap-2">{focusAreas.map((f) => <Badge key={f}>{f}</Badge>)}</div></Section>}
+          {focusAreas.length > 0 && <Section title="🎯 Focus for Next Week"><div className="flex flex-wrap">{focusAreas.map((f) => <Badge key={f}>{f}</Badge>)}</div></Section>}
           {schoolActivities.length > 0 && <Section title="🏫 What We Did at School"><ul className="list-disc pl-5">{schoolActivities.map((s) => <li key={s}>{s}</li>)}</ul></Section>}
           {homeActivities.length > 0 && <Section title="🏠 Try This at Home"><ul className="list-disc pl-5">{homeActivities.map((s) => <li key={s}>{s}</li>)}</ul></Section>}
 
@@ -138,6 +139,8 @@ export default async function ParentReportPage({ params }: { params: { assessmen
           fileName={`${student?.name?.replace(/\s+/g, '_') || 'student'}_Week_${a.weekStartDate}`}
         />
       </div>
+
+      <AcknowledgeWidget assessmentId={a.id} />
     </main>
   );
 }
@@ -146,5 +149,5 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   return <div className="mb-4"><p className="font-bold text-ns-purple mb-1">{title}</p><div className="text-sm text-gray-700 space-y-1">{children}</div></div>;
 }
 function Badge({ children }: { children: React.ReactNode }) {
-  return <span className="text-xs bg-ns-yellow/60 text-ns-purple rounded-full px-2 py-1 font-medium">{children}</span>;
+  return <span className="inline-block text-xs bg-ns-purple text-white rounded-full px-3 py-1.5 font-semibold mr-2 mb-2">{children}</span>;
 }

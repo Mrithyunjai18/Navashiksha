@@ -12,9 +12,10 @@ export default async function AdminDashboard() {
   const session = await getServerSession(authOptions);
   if (!session || !isAdminRole((session.user as any).role)) redirect('/login');
 
-  const [students, assessments, teachers] = await Promise.all([
-    readTab<any>('Students'), readTab<any>('Assessments'), readTab<any>('Teachers'),
+  const [students, assessments, teachers, acknowledgements] = await Promise.all([
+    readTab<any>('Students'), readTab<any>('Assessments'), readTab<any>('Teachers'), readTab<any>('ReportAcknowledgements'),
   ]);
+  const acknowledgedIds = new Set(acknowledgements.map((a) => a.assessmentId));
 
   const activeAssessments = assessments.filter((a) => a.isDeleted !== 'true');
   const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
@@ -40,7 +41,7 @@ export default async function AdminDashboard() {
         class: student?.class ?? '', section: student?.section ?? '', branch: student?.branch ?? '',
         weekStartDate: a.weekStartDate, createdBy: a.createdBy,
         daysPresent: Number(a.daysPresent) || 0, workingDays: Number(a.workingDays) || 0, attendancePct: Number(a.attendancePct) || 0,
-        status: a.status,
+        status: a.status, seen: acknowledgedIds.has(a.id),
       };
     });
 

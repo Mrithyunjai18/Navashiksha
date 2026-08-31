@@ -35,11 +35,16 @@ export default function EditAssessmentPage() {
   const [message, setMessage] = useState('');
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [ack, setAck] = useState<{ acknowledged: boolean; entries: any[] } | null>(null);
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login');
     if (status === 'authenticated' && !isAdminRole((session?.user as any)?.role)) router.push('/teacher/assessment');
   }, [status, session]);
+
+  useEffect(() => {
+    fetch(`/api/report/${id}/acknowledge`).then((r) => r.json()).then(setAck).catch(() => {});
+  }, [id]);
 
   useEffect(() => {
     fetch(`/api/admin/assessments/${id}`).then(async (res) => {
@@ -100,6 +105,15 @@ export default function EditAssessmentPage() {
             <Link href="/admin" className="text-ns-blue">← Dashboard</Link>
           </div>
         </div>
+
+        {ack?.acknowledged && (
+          <div className="bg-pink-50 border border-pink-200 rounded-xl2 p-3 mb-4">
+            <p className="text-sm font-semibold text-pink-700">❤️ Parent has seen this report</p>
+            {ack.entries.filter((e: any) => e.reply).map((e: any) => (
+              <p key={e.id} className="text-sm text-gray-600 mt-1 italic">"{e.reply}" — {new Date(e.createdAt).toLocaleDateString()}</p>
+            ))}
+          </div>
+        )}
 
         <form onSubmit={handleSave} className="space-y-4">
           <Section title="Attendance & Status">
