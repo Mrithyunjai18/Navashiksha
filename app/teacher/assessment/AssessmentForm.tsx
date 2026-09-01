@@ -11,8 +11,9 @@ interface FormMaster {
   focusAreas: { id: string; label: string }[];
   schoolActivityOptions: { id: string; label: string }[];
   homeActivityOptions: { id: string; label: string }[];
-  students: { id: string; name: string; studentCode: string }[];
+  students: { id: string; name: string; studentCode: string; class: string }[];
   customQuestions?: { id: string; label: string; type: string; options: string; points?: string; parentQuestionId?: string; triggerOption?: string }[];
+  concerns?: { code: string; title: string; ageWise: Record<string, string[]>; schoolStrategies: string[]; homeTips: string[] }[];
 }
 
 const PROGRESS_LABELS: Record<ProgressLevel, string> = {
@@ -34,9 +35,33 @@ export default function AssessmentForm({ master, previousWeek }: { master: FormM
   const [schoolActivities, setSchoolActivities] = useState<string[]>([]); const [homeActivities, setHomeActivities] = useState<string[]>([]);
   const [teacherNote, setTeacherNote] = useState('');
   const [customAnswers, setCustomAnswers] = useState<Record<string, string | string[]>>({});
+  const [selectedConcernCodes, setSelectedConcernCodes] = useState<string[]>([]);
+  const [concernStrategies, setConcernStrategies] = useState<Record<string, string[]>>({});
+  const [concernHomeTips, setConcernHomeTips] = useState<Record<string, string[]>>({});
+  const [concernNotes, setConcernNotes] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
   const attendancePct = useMemo(() => (workingDays ? Math.round((daysPresent / workingDays) * 1000) / 10 : 0), [daysPresent, workingDays]);
+  const selectedStudentClass = useMemo(() => master.students.find((s) => s.id === studentId)?.class ?? '', [studentId, master.students]);
+
+  function toggleConcern(code: string) {
+    setSelectedConcernCodes((prev) => {
+      if (prev.includes(code)) {
+        const nextStrat = { ...concernStrategies }; delete nextStrat[code]; setConcernStrategies(nextStrat);
+        const nextHome = { ...concernHomeTips }; delete nextHome[code]; setConcernHomeTips(nextHome);
+        const nextNotes = { ...concernNotes }; delete nextNotes[code]; setConcernNotes(nextNotes);
+        return prev.filter((c) => c !== code);
+      }
+      return [...prev, code];
+    });
+  }
+  function toggleConcernOption(code: string, bucket: 'school' | 'home', label: string) {
+    const setter = bucket === 'school' ? setConcernStrategies : setConcernHomeTips;
+    setter((prev) => {
+      const arr = prev[code] ?? [];
+      return { ...prev, [code]: arr.includes(label) ? arr.filter((l) => l !== label) : [...arr, label] };
+    });
+  }
 
   async function submit(finalStatus: 'DRAFT' | 'SUBMITTED') {
     setStatus('saving');
@@ -46,6 +71,12 @@ export default function AssessmentForm({ master, previousWeek }: { master: FormM
       focusAreaIds: focusSelected, recognition, language, maths, concepts,
       mostEnjoyedActivity: mostEnjoyed, weeklyStarMoment: starMoment,
       schoolActivities, homeActivities, teacherNote, customAnswers,
+      parentConcerns: selectedConcernCodes.map((code) => ({
+        concernId: code,
+        school: concernStrategies[code] ?? [],
+        home: concernHomeTips[code] ?? [],
+        note: concernNotes[code] ?? '',
+      })),
     };
     const res = await fetch('/api/assessments', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     setStatus(res.ok ? 'saved' : 'idle');
@@ -64,6 +95,43 @@ export default function AssessmentForm({ master, previousWeek }: { master: FormM
         <label className="block text-sm font-medium mb-1">Week starting</label>
         <input type="date" className="w-full border rounded-lg p-2" value={weekStartDate} onChange={(e) => setWeekStartDate(e.target.value)} />
       </section>
+
+      {/* Parent Concern — purely manual selection, no auto-linking to any other field */}
+      {master.concerns && master.concerns.length > 0 && (
+        <section className="bg-white rounded-xl2 shadow-sm p-5 mb-4">
+          <h2 className="font-bold text-lg mb-1 text-ns-purple">Parent Concern (optional)</h2>
+          <p className="text-sm text-gray-500 mb-3">If a parent raised a concern this week, select it — you'll see what's typically expected for this child's class, plus quick picks for what you actually did. Nothing here affects any other section of this form.</p>
+          <div className="space-y-2">
+            {master.concerns.map((c) => {
+              const active = selectedConcernCodes.includes(c.code);
+              const expectations = selectedStudentClass ? c.ageWise[selectedStudentClass] : undefined;
+              return (
+                <div key={c.code} className={`rounded-lg border ${active ? 'border-ns-purple bg-ns-purple/5' : 'border-gray-200'}`}>
+                  <button type="button" onClick={() => toggleConcern(c.code)} className="w-full text-left p-3 font-medium flex justify-between items-center">
+                    {c.title} <span className="text-xs text-gray-400">{active ? '▲' : '▼'}</span>
+                  </button>
+                  {active && (
+                    <div className="p-3 pt-0 space-y-3">
+                      {expectations && expectations.length > 0 && (
+                        <div className="bg-ns-cream rounded-lg p-2 text-xs text-gray-600">
+                          <p className="font-semibold mb-1">What's typical for {selectedStudentClass}:</p>
+                          <ul className="list-disc pl-4">{expectations.map((e) => <li key={e}>{e}</li>)}</ul>
+                        </div>
+                      )}
+                      <OptionGroup label="Strategies used at school this week" options={c.schoolStrategies}
+                        selected={concernStrategies[c.code] ?? []} onToggle={(l) => toggleConcernOption(c.code, 'school', l)} />
+                      <OptionGroup label="Home tips given to parent" options={c.homeTips}
+                        selected={concernHomeTips[c.code] ?? []} onToggle={(l) => toggleConcernOption(c.code, 'home', l)} />
+                      <textarea placeholder="Optional note…" className="w-full border rounded-lg p-2 text-sm"
+                        value={concernNotes[c.code] ?? ''} onChange={(e) => setConcernNotes((p) => ({ ...p, [c.code]: e.target.value }))} />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* Section B — Attendance */}
       <section className="bg-white rounded-xl2 shadow-sm p-5 mb-4">

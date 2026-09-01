@@ -20,7 +20,7 @@ const TABS: Record<string, string[]> = {
     'mostEnjoyedActivity', 'weeklyStarMoment', 'focusAreas', 'schoolActivities', 'homeActivities', 'teacherNote',
     'createdBy', 'createdAt', 'lastModifiedBy', 'updatedAt', 'isDeleted', 'deletedBy', 'deletedAt',
   ],
-  ParentConcerns: ['code', 'title', 'signs', 'normalByAge', 'schoolSupports', 'homeTips', 'linkedFocusAreas'],
+  ParentConcerns: ['code', 'title', 'ageWiseExpectations', 'schoolStrategies', 'homeTips'],
   MasterLists: ['listName', 'label', 'sortOrder'],
   AuditLog: ['id', 'userEmail', 'entityType', 'entityId', 'action', 'changes', 'createdAt'],
   ReportAcknowledgements: ['id', 'assessmentId', 'reply', 'createdAt'],
@@ -29,60 +29,94 @@ const TABS: Record<string, string[]> = {
 };
 
 const CONCERNS = [
-  ['ATTENTION_SPAN', 'Attention Span Difficulty',
-    'Gets distracted easily|Leaves activity in between|Needs constant reminders',
-    '2 yrs:4-6 min|3 yrs:6-9 min|4 yrs:8-12 min|5 yrs:10-15 min|6 yrs:12-18 min',
-    'Circle time routines|Short, engaging activities|Fine motor work (beads, clay, puzzles)|Phonics & rhyme repetition|Storytelling with questions',
-    'Keep activities short & meaningful|Reduce screen time|Provide a quiet space|Praise effort & focus|Maintain a routine',
-    'Attention and concentration|Attention and sitting tolerance'],
-  ['SOCIALIZING', 'Socializing Difficulty',
-    'Prefers to play alone|Shy or avoids group activities|Takes time to warm up|Difficulty sharing or taking turns',
-    '2-3 yrs:Parallel play is normal|3-4 yrs:Begins group play|4-5 yrs:Makes friends & enjoys group activities',
-    'Circle time & group songs|Sharing activities|Role play|Storytelling & discussions|Structured classroom routines',
-    'Arrange playdates|Encourage greeting habits|Teach sharing gently|Read stories about friendship|Avoid forcing interaction',
-    'Social skills'],
-  ['SPEECH_DELAY', 'Speech Delay / Communication Hesitation',
-    'Limited words|Does not form sentences|Hesitates to speak in group|Not able to express needs clearly',
-    '2 yrs:50-200 words|3 yrs:2-3 word sentences|4 yrs:4-5 word sentences|5 yrs:Talks in complete sentences',
-    'Phonics & vocabulary building|Rhyme time|Storytelling & show and tell|Circle conversation practice|Individual attention',
-    'Talk to your child often|Read picture books together|Encourage expressing needs|Limit screen time|Be patient & listen',
-    'Communication'],
-  ['SEPARATION_ANXIETY', 'Separation Anxiety',
-    'Cries at drop-off|Seeks constant reassurance|Fear of new environment',
-    '2-4 yrs:Very common',
-    'Warm greeting & goodbye routine|Comfort transition time|Predictable schedule|Teacher bonding|Peer exposure',
-    'Develop a goodbye routine|Keep goodbyes short & positive|Be consistent|Talk positively about school',
-    'Confidence building'],
-  ['PENCIL_GRIP', 'Poor Pencil Grip / Writing Readiness',
-    'Weak grip|Poor control while drawing|Difficult to trace lines or shapes',
-    '2-3 yrs:Scribbles|3-4 yrs:Random shapes & lines|4-5 yrs:Traces simple shapes|5-6 yrs:Ready for early writing',
-    'Fine motor activities (beads, threading, clay, tearing)|Tracing lines & shapes|Coloring & pattern activities|Pre-writing strokes',
-    'Provide crayons, clay, playdough|Encourage coloring & tracing|Avoid forcing writing|Let them do daily self-help tasks',
-    'Fine motor skills'],
-  ['HYPERACTIVITY', 'Hyperactivity / Restlessness',
-    'Constant movement|Cannot follow instructions|Interrupts activities|Short attention span',
-    'Preschool years:High energy is normal; improves with age & structured routine',
-    'Movement breaks|Action songs & yoga|Task-based activities|Structured routine|Positive guidance & redirection',
-    'Provide physical play time|Set clear limits|Give simple instructions|Praise good behavior',
-    'Attention and concentration|Following instructions'],
-  ['CONFIDENCE', 'Lack of Confidence / Stage Fear',
-    'Shy in group|Avoids participation|Silent during presentations',
-    '2-5 yrs:Shyness is common; confidence grows with exposure & support',
-    'Show and tell|Rhyme recitation|Role play|Appreciation & encouragement|Small group interactions',
-    "Encourage, don't push|Give choices|Celebrate small achievements|Expose to small gatherings",
-    'Confidence building'],
-  ['FOLLOWING_INSTRUCTIONS', 'Difficulty Following Instructions',
-    "Doesn't respond|Gets distracted|Forgets quickly|Needs constant repeating",
-    'Preschool:Understanding improves with age; short & simple instructions work best',
-    'Visual instructions|Simple, one-step directions|Repetition with routine|Positive reinforcement',
-    'Give clear instructions|Use visual cues|Be consistent|Praise when they follow',
-    'Following instructions'],
-  ['SCREEN_DEPENDENCY', 'Screen Dependency',
-    'Difficulty without screens|Irritable when screen time stops|Less interest in other activities',
-    'Under 2 yrs:No screen needed|2-5 yrs:<1 hour/day of quality content',
-    'Engaging activities|Peer interaction|Sensory & movement play|Storytelling & creative learning',
-    'Set screen time limits|Offer healthy snacks & water|Encourage outdoor & creative play|Involve in family time',
-    ''],
+  {
+    code: 'ATTENTION_SPAN', title: 'Attention Span Difficulty',
+    ageWise: {
+      Playgroup: ['Attends to an activity for 1-2 minutes', 'Needs reminders to stay on task'],
+      Nursery: ['Gets distracted easily, needs redirection'],
+      LKG: ['Attends for 5-10 minutes', 'Can focus with minimal reminders'],
+      UKG: ['Attends for 10-15 minutes', 'Completes short tasks with less support'],
+    },
+    schoolStrategies: ['Short, engaging activities', 'Movement breaks (hopping, stretching)', 'Freeze & Go, follow-the-action games', 'One task at a time'],
+    homeTips: ['Keep activities short and interesting', 'Give one instruction at a time', 'Reduce distractions (TV, mobile)', 'Praise effort and completion'],
+  },
+  {
+    code: 'SOCIALIZING', title: 'Socialising Difficulty',
+    ageWise: {
+      Playgroup: ['Plays beside others', 'Watches other children'],
+      Nursery: ['Shows interest in other children', 'Plays simple games with support'],
+      LKG: ['Plays with others', 'Takes turns with support', 'Shares sometimes'],
+      UKG: ['Plays in a group', 'Takes turns independently', 'Shares and cooperates'],
+    },
+    schoolStrategies: ['Circle time & group activities', 'Partner games & turn-taking games', 'Role play & dramatisation', 'Sharing & caring activities'],
+    homeTips: ['Arrange playdates', 'Encourage sharing & turn-taking', 'Teach greetings & polite words', "Don't force interaction"],
+  },
+  {
+    code: 'READING_READINESS', title: 'Reading Difficulty / Reading Readiness',
+    ageWise: {
+      Playgroup: ['Enjoys picture books', 'Looks at pictures', 'Listens to stories'],
+      Nursery: ['Understands simple stories', 'Identifies familiar pictures', 'Enjoys rhymes'],
+      LKG: ['Recognises letters (some)', 'Identifies starting sounds', 'Attempts to read simple words'],
+      UKG: ['Reads simple words and sentences', 'Understands story and answers questions'],
+    },
+    schoolStrategies: ['Storytelling & picture reading', 'Phonics & sound games', 'Rhyming activities', 'Letter-sound games & blending', 'Picture sequencing & comprehension', 'Shared reading & "what happens next?"'],
+    homeTips: ['Read a story daily', 'Talk about pictures', 'Play rhyming games', 'Identify starting sounds', 'Encourage child to read familiar words'],
+  },
+  {
+    code: 'SPEAKING_COMMUNICATION', title: 'Speaking & Communication Difficulty',
+    ageWise: {
+      Playgroup: ['Babbling & uses few words', 'Points to express needs'],
+      Nursery: ['Speaks in short sentences', 'Asks simple questions', 'Names objects'],
+      LKG: ['Speaks in sentences', 'Expresses ideas with support'],
+      UKG: ['Speaks clearly in sentences', 'Uses new words', 'Expresses ideas confidently'],
+    },
+    schoolStrategies: ['Circle time conversations', 'Show & Tell, picture talk', 'Puppet talk & role play', 'Songs, rhymes & story retelling', 'Partner talk activities'],
+    homeTips: ['Talk during daily routines', 'Ask open questions', 'Encourage full sentences', 'Give time to answer', 'Read aloud and discuss'],
+  },
+  {
+    code: 'WRITING_READINESS', title: 'Writing Difficulty / Writing Readiness',
+    ageWise: {
+      Playgroup: ['Enjoys scribbling', 'Makes random lines'],
+      Nursery: ['Draws lines & circles', 'Holds crayon with support', 'Imitates strokes'],
+      LKG: ['Traces lines, curves', 'Writes some letters with support', 'Begins to write own name'],
+      UKG: ['Writes letters correctly', 'Writes own name', 'Writes simple words and sentences'],
+    },
+    schoolStrategies: ['Sand tracing & air writing', 'Playdough, beading & threading', 'Pre-writing strokes & line tracing', 'Pencil control activities', 'Letter formation practice'],
+    homeTips: ['Provide crayons & paper', 'Let child draw, colour, trace', 'Playdough & threading activities', 'Simple writing practice', 'Encourage proper pencil hold'],
+  },
+  {
+    code: 'HYPERACTIVITY', title: 'Hyperactivity / Restlessness',
+    ageWise: {
+      Playgroup: ['Very active', 'Finds it hard to sit for any activity'],
+      Nursery: ['Moves frequently', 'Needs help to settle'],
+      LKG: ['Active but can settle for short activities', 'Needs movement breaks'],
+      UKG: ['Can manage energy better', 'Follows routine with little support'],
+    },
+    schoolStrategies: ['Hopping, jumping & obstacle course', 'Animal walks & yoga', 'Action songs & movement breaks', 'Hands-on & heavy-work activities'],
+    homeTips: ['Daily outdoor play', 'Hopping, jumping games', 'Maintain routine', 'Limit screen time', 'Praise calm behaviour'],
+  },
+  {
+    code: 'CONFIDENCE', title: 'Lack of Confidence / Stage Fear',
+    ageWise: {
+      Playgroup: ['Shy with new people', 'Needs comfort from adults'],
+      Nursery: ['Speaks with familiar people only', 'Needs encouragement'],
+      LKG: ['Hesitant to speak in group', 'Participates with support'],
+      UKG: ['Speaks in group with confidence', 'Tries new activities'],
+    },
+    schoolStrategies: ['Show & Tell in small groups', 'Puppet speaking & role play', 'Choice-based activities', 'Buddy support & appreciation circle'],
+    homeTips: ["Encourage, don't push", 'Give simple choices', 'Celebrate small attempts', 'Let child speak in comfortable settings'],
+  },
+  {
+    code: 'FOLLOWING_INSTRUCTIONS', title: 'Difficulty Following Instructions',
+    ageWise: {
+      Playgroup: ['Follows single step with support', 'Needs reminders'],
+      Nursery: ['Follows 1-2 step instructions with reminders'],
+      LKG: ['Follows 2 step instructions with support', 'Needs repetition at times'],
+      UKG: ['Follows 2-3 step instructions independently'],
+    },
+    schoolStrategies: ['Simon Says & action sequences', 'One-step to two-step instructions', 'Visual instruction cards', 'Classroom helper tasks', 'Repetition with support'],
+    homeTips: ['Give one instruction at a time', 'Use simple words', 'Ask child to repeat instruction', 'Be consistent'],
+  },
 ];
 
 const MASTER_LISTS: Record<string, string[]> = {
@@ -116,7 +150,9 @@ async function main() {
   }
 
   // Seed ParentConcerns
-  const concernRows = CONCERNS.map(([code, title, signs, normal, school, home, focus]) => [code, title, signs, normal, school, home, focus]);
+  const concernRows = CONCERNS.map((c) => [
+    c.code, c.title, JSON.stringify(c.ageWise), c.schoolStrategies.join('|'), c.homeTips.join('|'),
+  ]);
   await sheets.spreadsheets.values.update({
     spreadsheetId: SPREADSHEET_ID, range: `ParentConcerns!A2`, valueInputOption: 'USER_ENTERED', requestBody: { values: concernRows },
   });

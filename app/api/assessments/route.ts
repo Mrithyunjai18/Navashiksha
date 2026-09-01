@@ -32,7 +32,11 @@ export async function POST(req: NextRequest) {
   await appendRow('Assessments', {
     id, studentId, weekStartDate, assessmentDate: now.slice(0, 10),
     workingDays, daysPresent, attendancePct, status,
-    parentConcernCodes: '', parentConcernSigns: '', parentConcernSchoolSupport: '', parentConcernHomeTips: '', parentConcernNote: '',
+    parentConcernCodes: (body.parentConcerns ?? []).map((c: any) => c.concernId).join('|'),
+    parentConcernSigns: '',
+    parentConcernSchoolSupport: (body.parentConcerns ?? []).map((c: any) => (c.school ?? []).join(';')).join('|'),
+    parentConcernHomeTips: (body.parentConcerns ?? []).map((c: any) => (c.home ?? []).join(';')).join('|'),
+    parentConcernNote: (body.parentConcerns ?? []).map((c: any) => c.note ?? '').join('|'),
     socialEmotional: Object.entries(body.socialEmotional ?? {}).filter(([, v]) => v).map(([k, v]) => `${k}:${v}`).join('|'),
     learningReadiness: Object.entries(body.learningReadiness ?? {}).filter(([, v]) => v).map(([k, v]) => `${k}:${v}`).join('|'),
     language: body.language ?? '', maths: body.maths ?? '', concepts: body.concepts ?? '',
