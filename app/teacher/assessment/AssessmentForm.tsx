@@ -6,8 +6,6 @@ type ProgressLevel = 'NEEDS_SUPPORT' | 'DEVELOPING' | 'GOOD' | 'EXCELLENT';
 type RecognitionLevel = 'NOT_YET_INTRODUCED' | 'WITH_HELP' | 'INDEPENDENT';
 
 interface FormMaster {
-  socialAreas: { id: string; label: string }[];
-  readinessAreas: { id: string; label: string }[];
   focusAreas: { id: string; label: string }[];
   schoolActivityOptions: { id: string; label: string }[];
   homeActivityOptions: { id: string; label: string }[];
@@ -27,8 +25,6 @@ export default function AssessmentForm({ master, previousWeek }: { master: FormM
   const [daysPresent, setDaysPresent] = useState(5);
 
   const [focusSelected, setFocusSelected] = useState<string[]>([]);
-  const [socialSelected, setSocialSelected] = useState<Record<string, ProgressLevel | ''>>({});
-  const [readinessSelected, setReadinessSelected] = useState<Record<string, ProgressLevel | ''>>({});
   const [schoolActivities, setSchoolActivities] = useState<string[]>([]);
   const [recognition, setRecognition] = useState<Record<string, RecognitionLevel | ''>>({ letter: '', number: '', shape: '', colour: '' });
   const [language, setLanguage] = useState(''); const [maths, setMaths] = useState(''); const [concepts, setConcepts] = useState('');
@@ -70,7 +66,6 @@ export default function AssessmentForm({ master, previousWeek }: { master: FormM
     setStatus('saving');
     const payload = {
       studentId, weekStartDate, workingDays, daysPresent, status: finalStatus,
-      socialEmotional: socialSelected, learningReadiness: readinessSelected,
       focusAreaIds: focusSelected, recognition, language, maths, concepts,
       mostEnjoyedActivity: mostEnjoyed, weeklyStarMoment: starMoment,
       schoolActivities, homeActivities, teacherNote, customAnswers,
@@ -145,22 +140,6 @@ export default function AssessmentForm({ master, previousWeek }: { master: FormM
             <input type="number" min={0} max={workingDays} className="w-full border rounded-lg p-2" value={daysPresent} onChange={(e) => setDaysPresent(+e.target.value)} /></div>
         </div>
         <p className="mt-2 text-sm text-gray-600">Attendance: <strong>{daysPresent} / {workingDays} days — {attendancePct}%</strong> (auto-calculated)</p>
-      </section>
-
-      {/* Social & Emotional */}
-      <section className="bg-white rounded-xl2 shadow-sm p-5 mb-4">
-        <h2 className="font-bold text-lg mb-3 text-ns-purple">Social & Emotional Development</h2>
-        {master.socialAreas.map((a) => (
-          <ProgressRow key={a.id} label={a.label} value={socialSelected[a.id] ?? ''} onChange={(v) => setSocialSelected((p) => ({ ...p, [a.id]: v }))} />
-        ))}
-      </section>
-
-      {/* Learning Readiness */}
-      <section className="bg-white rounded-xl2 shadow-sm p-5 mb-4">
-        <h2 className="font-bold text-lg mb-3 text-ns-purple">Learning Readiness</h2>
-        {master.readinessAreas.map((a) => (
-          <ProgressRow key={a.id} label={a.label} value={readinessSelected[a.id] ?? ''} onChange={(v) => setReadinessSelected((p) => ({ ...p, [a.id]: v }))} />
-        ))}
       </section>
 
       {/* Academic content */}

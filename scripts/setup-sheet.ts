@@ -33,7 +33,7 @@ const CONCERNS = [
     code: 'ATTENTION_SPAN', title: 'Attention Span Difficulty',
     ageWise: {
       Playgroup: ['Attends to an activity for 1-2 minutes', 'Needs reminders to stay on task'],
-      Nursery: ['Gets distracted easily, needs redirection'],
+      Nursery: ['Attends for 3-5 minutes', 'Gets distracted easily, needs redirection'],
       LKG: ['Attends for 5-10 minutes', 'Can focus with minimal reminders'],
       UKG: ['Attends for 10-15 minutes', 'Completes short tasks with less support'],
     },
