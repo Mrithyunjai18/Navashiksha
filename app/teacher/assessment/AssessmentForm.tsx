@@ -23,7 +23,6 @@ export default function AssessmentForm({ master, previousWeek }: { master: FormM
   const [daysPresent, setDaysPresent] = useState(5);
 
   const [focusSelected, setFocusSelected] = useState<string[]>([]);
-  const [recognition, setRecognition] = useState<Record<string, RecognitionLevel | ''>>({ letter: '', number: '', shape: '', colour: '' });
   const [language, setLanguage] = useState(''); const [maths, setMaths] = useState(''); const [concepts, setConcepts] = useState('');
   const [mostEnjoyed, setMostEnjoyed] = useState(''); const [starMoment, setStarMoment] = useState('');
   const [teacherNote, setTeacherNote] = useState('');
@@ -62,7 +61,7 @@ export default function AssessmentForm({ master, previousWeek }: { master: FormM
     setStatus('saving');
     const payload = {
       studentId, weekStartDate, workingDays, daysPresent, status: finalStatus,
-      focusAreaIds: focusSelected, recognition, language, maths, concepts,
+      focusAreaIds: focusSelected, language, maths, concepts,
       mostEnjoyedActivity: mostEnjoyed, weeklyStarMoment: starMoment,
       teacherNote, customAnswers,
       parentConcerns: selectedConcernCodes.map((code) => ({
@@ -146,21 +145,6 @@ export default function AssessmentForm({ master, previousWeek }: { master: FormM
         <Field label="Concepts covered" value={concepts} onChange={setConcepts} placeholder="e.g. Body parts, colouring, matching objects" />
       </section>
 
-      {/* Recognition */}
-      <section className="bg-white rounded-xl2 shadow-sm p-5 mb-4">
-        <h2 className="font-bold text-lg mb-3 text-ns-purple">Letter / Number / Shape / Colour Recognition</h2>
-        {(['letter', 'number', 'shape', 'colour'] as const).map((k) => (
-          <div key={k} className="mb-3">
-            <label className="block text-sm font-medium capitalize mb-1">{k} recognition</label>
-            <select className="w-full border rounded-lg p-2" value={recognition[k]} onChange={(e) => setRecognition((p) => ({ ...p, [k]: e.target.value as RecognitionLevel }))}>
-              <option value="">Select…</option>
-              <option value="NOT_YET_INTRODUCED">Not yet introduced</option>
-              <option value="WITH_HELP">With help</option>
-              <option value="INDEPENDENT">Independent</option>
-            </select>
-          </div>
-        ))}
-      </section>
 
       {/* Activities */}
       <section className="bg-ns-yellow/40 rounded-xl2 shadow-sm p-5 mb-4">
