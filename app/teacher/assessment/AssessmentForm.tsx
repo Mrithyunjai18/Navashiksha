@@ -6,7 +6,6 @@ type ProgressLevel = 'NEEDS_SUPPORT' | 'DEVELOPING' | 'GOOD' | 'EXCELLENT';
 type RecognitionLevel = 'NOT_YET_INTRODUCED' | 'WITH_HELP' | 'INDEPENDENT';
 
 interface FormMaster {
-  readinessAreas: { id: string; label: string }[];
   focusAreas: { id: string; label: string }[];
   schoolActivityOptions: { id: string; label: string }[];
   homeActivityOptions: { id: string; label: string }[];
@@ -25,7 +24,6 @@ export default function AssessmentForm({ master, previousWeek }: { master: FormM
   const [workingDays, setWorkingDays] = useState(5);
   const [daysPresent, setDaysPresent] = useState(5);
 
-  const [readinessSelected, setReadinessSelected] = useState<Record<string, ProgressLevel | ''>>({});
   const [focusSelected, setFocusSelected] = useState<string[]>([]);
   const [recognition, setRecognition] = useState<Record<string, RecognitionLevel | ''>>({ letter: '', number: '', shape: '', colour: '' });
   const [language, setLanguage] = useState(''); const [maths, setMaths] = useState(''); const [concepts, setConcepts] = useState('');
@@ -67,7 +65,6 @@ export default function AssessmentForm({ master, previousWeek }: { master: FormM
     setStatus('saving');
     const payload = {
       studentId, weekStartDate, workingDays, daysPresent, status: finalStatus,
-      learningReadiness: readinessSelected,
       focusAreaIds: focusSelected, recognition, language, maths, concepts,
       mostEnjoyedActivity: mostEnjoyed, weeklyStarMoment: starMoment,
       schoolActivities, homeActivities, teacherNote, customAnswers,
@@ -145,13 +142,6 @@ export default function AssessmentForm({ master, previousWeek }: { master: FormM
       </section>
 
 
-      {/* Learning Readiness */}
-      <section className="bg-white rounded-xl2 shadow-sm p-5 mb-4">
-        <h2 className="font-bold text-lg mb-3 text-ns-purple">Learning Readiness</h2>
-        {master.readinessAreas.map((a) => (
-          <ProgressRow key={a.id} label={a.label} value={readinessSelected[a.id] ?? ''} onChange={(v) => setReadinessSelected((p) => ({ ...p, [a.id]: v }))} />
-        ))}
-      </section>
 
       {/* Academic content */}
       <section className="bg-white rounded-xl2 shadow-sm p-5 mb-4">
