@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     id, studentId, weekStartDate, assessmentDate: now.slice(0, 10),
     workingDays, daysPresent, attendancePct, status,
     parentConcernCodes: (body.parentConcerns ?? []).map((c: any) => c.concernId).join('|'),
-    parentConcernSigns: '',
+    parentConcernSigns: (body.parentConcerns ?? []).map((c: any) => (c.signs ?? []).join(';')).join('|'),
     parentConcernSchoolSupport: (body.parentConcerns ?? []).map((c: any) => (c.school ?? []).join(';')).join('|'),
     parentConcernHomeTips: (body.parentConcerns ?? []).map((c: any) => (c.home ?? []).join(';')).join('|'),
     parentConcernNote: (body.parentConcerns ?? []).map((c: any) => c.note ?? '').join('|'),

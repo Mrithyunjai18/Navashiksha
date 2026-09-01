@@ -39,6 +39,7 @@ export default function AssessmentForm({ master, previousWeek }: { master: FormM
   const [concernStrategies, setConcernStrategies] = useState<Record<string, string[]>>({});
   const [concernHomeTips, setConcernHomeTips] = useState<Record<string, string[]>>({});
   const [concernNotes, setConcernNotes] = useState<Record<string, string>>({});
+  const [concernObserved, setConcernObserved] = useState<Record<string, string[]>>({});
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
   const attendancePct = useMemo(() => (workingDays ? Math.round((daysPresent / workingDays) * 1000) / 10 : 0), [daysPresent, workingDays]);
@@ -50,13 +51,14 @@ export default function AssessmentForm({ master, previousWeek }: { master: FormM
         const nextStrat = { ...concernStrategies }; delete nextStrat[code]; setConcernStrategies(nextStrat);
         const nextHome = { ...concernHomeTips }; delete nextHome[code]; setConcernHomeTips(nextHome);
         const nextNotes = { ...concernNotes }; delete nextNotes[code]; setConcernNotes(nextNotes);
+        const nextObs = { ...concernObserved }; delete nextObs[code]; setConcernObserved(nextObs);
         return prev.filter((c) => c !== code);
       }
       return [...prev, code];
     });
   }
-  function toggleConcernOption(code: string, bucket: 'school' | 'home', label: string) {
-    const setter = bucket === 'school' ? setConcernStrategies : setConcernHomeTips;
+  function toggleConcernOption(code: string, bucket: 'school' | 'home' | 'observed', label: string) {
+    const setter = bucket === 'school' ? setConcernStrategies : bucket === 'home' ? setConcernHomeTips : setConcernObserved;
     setter((prev) => {
       const arr = prev[code] ?? [];
       return { ...prev, [code]: arr.includes(label) ? arr.filter((l) => l !== label) : [...arr, label] };
@@ -73,6 +75,7 @@ export default function AssessmentForm({ master, previousWeek }: { master: FormM
       schoolActivities, homeActivities, teacherNote, customAnswers,
       parentConcerns: selectedConcernCodes.map((code) => ({
         concernId: code,
+        signs: concernObserved[code] ?? [],
         school: concernStrategies[code] ?? [],
         home: concernHomeTips[code] ?? [],
         note: concernNotes[code] ?? '',
@@ -113,10 +116,8 @@ export default function AssessmentForm({ master, previousWeek }: { master: FormM
                   {active && (
                     <div className="p-3 pt-0 space-y-3">
                       {expectations && expectations.length > 0 && (
-                        <div className="bg-ns-cream rounded-lg p-2 text-xs text-gray-600">
-                          <p className="font-semibold mb-1">What's typical for {selectedStudentClass}:</p>
-                          <ul className="list-disc pl-4">{expectations.map((e) => <li key={e}>{e}</li>)}</ul>
-                        </div>
+                        <OptionGroup label={`What's typical for ${selectedStudentClass} — select what you've observed`} options={expectations}
+                          selected={concernObserved[c.code] ?? []} onToggle={(l) => toggleConcernOption(c.code, 'observed', l)} />
                       )}
                       <OptionGroup label="Strategies used at school this week" options={c.schoolStrategies}
                         selected={concernStrategies[c.code] ?? []} onToggle={(l) => toggleConcernOption(c.code, 'school', l)} />
