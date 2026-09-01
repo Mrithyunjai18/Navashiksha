@@ -57,6 +57,7 @@ export default async function AdminDashboard() {
           <Link href="/admin/questions" className="px-3 py-1.5 rounded-lg border border-ns-purple text-ns-purple text-sm font-semibold">📝 Custom Questions</Link>
           <Link href="/admin/parent-concerns" className="px-3 py-1.5 rounded-lg border border-ns-purple text-ns-purple text-sm font-semibold">🤝 Parent Concerns</Link>
           <Link href="/admin/weekly-digest" className="px-3 py-1.5 rounded-lg border border-ns-purple text-ns-purple text-sm font-semibold">📦 Weekly Digest</Link>
+          <Link href="/teacher/assessment" className="px-3 py-1.5 rounded-lg bg-ns-green text-white text-sm font-semibold">✏️ Submit Assessment</Link>
         </div>
       </div>
 
