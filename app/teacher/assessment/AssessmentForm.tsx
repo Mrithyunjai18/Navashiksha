@@ -6,6 +6,8 @@ type ProgressLevel = 'NEEDS_SUPPORT' | 'DEVELOPING' | 'GOOD' | 'EXCELLENT';
 type RecognitionLevel = 'NOT_YET_INTRODUCED' | 'WITH_HELP' | 'INDEPENDENT';
 
 interface FormMaster {
+  socialAreas: { id: string; label: string }[];
+  readinessAreas: { id: string; label: string }[];
   focusAreas: { id: string; label: string }[];
   schoolActivityOptions: { id: string; label: string }[];
   homeActivityOptions: { id: string; label: string }[];
@@ -25,10 +27,13 @@ export default function AssessmentForm({ master, previousWeek }: { master: FormM
   const [daysPresent, setDaysPresent] = useState(5);
 
   const [focusSelected, setFocusSelected] = useState<string[]>([]);
+  const [socialSelected, setSocialSelected] = useState<Record<string, ProgressLevel | ''>>({});
+  const [readinessSelected, setReadinessSelected] = useState<Record<string, ProgressLevel | ''>>({});
+  const [schoolActivities, setSchoolActivities] = useState<string[]>([]);
   const [recognition, setRecognition] = useState<Record<string, RecognitionLevel | ''>>({ letter: '', number: '', shape: '', colour: '' });
   const [language, setLanguage] = useState(''); const [maths, setMaths] = useState(''); const [concepts, setConcepts] = useState('');
   const [mostEnjoyed, setMostEnjoyed] = useState(''); const [starMoment, setStarMoment] = useState('');
-  const [schoolActivities, setSchoolActivities] = useState<string[]>([]); const [homeActivities, setHomeActivities] = useState<string[]>([]);
+  const [homeActivities, setHomeActivities] = useState<string[]>([]);
   const [teacherNote, setTeacherNote] = useState('');
   const [customAnswers, setCustomAnswers] = useState<Record<string, string | string[]>>({});
   const [selectedConcernCodes, setSelectedConcernCodes] = useState<string[]>([]);
@@ -65,6 +70,7 @@ export default function AssessmentForm({ master, previousWeek }: { master: FormM
     setStatus('saving');
     const payload = {
       studentId, weekStartDate, workingDays, daysPresent, status: finalStatus,
+      socialEmotional: socialSelected, learningReadiness: readinessSelected,
       focusAreaIds: focusSelected, recognition, language, maths, concepts,
       mostEnjoyedActivity: mostEnjoyed, weeklyStarMoment: starMoment,
       schoolActivities, homeActivities, teacherNote, customAnswers,
@@ -141,7 +147,21 @@ export default function AssessmentForm({ master, previousWeek }: { master: FormM
         <p className="mt-2 text-sm text-gray-600">Attendance: <strong>{daysPresent} / {workingDays} days — {attendancePct}%</strong> (auto-calculated)</p>
       </section>
 
+      {/* Social & Emotional */}
+      <section className="bg-white rounded-xl2 shadow-sm p-5 mb-4">
+        <h2 className="font-bold text-lg mb-3 text-ns-purple">Social & Emotional Development</h2>
+        {master.socialAreas.map((a) => (
+          <ProgressRow key={a.id} label={a.label} value={socialSelected[a.id] ?? ''} onChange={(v) => setSocialSelected((p) => ({ ...p, [a.id]: v }))} />
+        ))}
+      </section>
 
+      {/* Learning Readiness */}
+      <section className="bg-white rounded-xl2 shadow-sm p-5 mb-4">
+        <h2 className="font-bold text-lg mb-3 text-ns-purple">Learning Readiness</h2>
+        {master.readinessAreas.map((a) => (
+          <ProgressRow key={a.id} label={a.label} value={readinessSelected[a.id] ?? ''} onChange={(v) => setReadinessSelected((p) => ({ ...p, [a.id]: v }))} />
+        ))}
+      </section>
 
       {/* Academic content */}
       <section className="bg-white rounded-xl2 shadow-sm p-5 mb-4">
@@ -181,11 +201,13 @@ export default function AssessmentForm({ master, previousWeek }: { master: FormM
           onToggle={(label) => { const fa = master.focusAreas.find((f) => f.label === label)!; setFocusSelected((prev) => prev.includes(fa.id) ? prev.filter((id) => id !== fa.id) : [...prev, fa.id]); }} />
       </section>
 
-      {/* School / Home activities */}
+      {/* School activities */}
       <section className="bg-white rounded-xl2 shadow-sm p-5 mb-4">
         <h2 className="font-bold text-lg mb-3 text-ns-purple">School Activities Conducted</h2>
         <OptionGroup options={master.schoolActivityOptions.map((o) => o.label)} selected={schoolActivities} onToggle={(l) => setSchoolActivities((p) => p.includes(l) ? p.filter((x) => x !== l) : [...p, l])} />
       </section>
+
+      {/* Home activities */}
       <section className="bg-white rounded-xl2 shadow-sm p-5 mb-4">
         <h2 className="font-bold text-lg mb-3 text-ns-purple">Home Activities for Parents</h2>
         <OptionGroup options={master.homeActivityOptions.map((o) => o.label)} selected={homeActivities} onToggle={(l) => setHomeActivities((p) => p.includes(l) ? p.filter((x) => x !== l) : [...p, l])} />
